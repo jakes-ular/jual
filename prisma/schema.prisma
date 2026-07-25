@@ -41,6 +41,7 @@ model User {
   reviews       Review[]
   wishlists     Wishlist[]
   downloads     Download[]
+  appeals       Appeal[]
 
   @@index([email])
 }
@@ -215,4 +216,17 @@ model Setting {
   key       String   @id
   value     String
   updatedAt DateTime @updatedAt
+}
+
+model Appeal {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message    String
+  status     String    @default("PENDING") // PENDING | RESOLVED
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime?
+
+  @@index([userId])
+  @@index([status])
 }

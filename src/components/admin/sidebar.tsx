@@ -8,6 +8,7 @@ import {
   FolderTree,
   ClipboardList,
   Users,
+  MessageSquareWarning,
   Settings,
   ArrowLeft,
 } from "lucide-react";
@@ -19,6 +20,7 @@ const links = [
   { href: "/admin/categories", label: "Categories", icon: FolderTree },
   { href: "/admin/orders", label: "Orders", icon: ClipboardList },
   { href: "/admin/users", label: "Users", icon: Users },
+  { href: "/admin/appeals", label: "Appeals", icon: MessageSquareWarning },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 

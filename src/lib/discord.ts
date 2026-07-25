@@ -74,6 +74,23 @@ export async function notifyContactMessage(params: {
   });
 }
 
+export async function notifyAppeal(params: {
+  buyerName: string;
+  buyerEmail: string;
+  suspensionReason: string | null;
+  message: string;
+}) {
+  await sendDiscordWebhook({
+    title: "🙋 Appeal Akun Suspended",
+    color: 0x3b82f6,
+    fields: [
+      { name: "User", value: `${params.buyerName} (${params.buyerEmail})` },
+      { name: "Alasan Suspend", value: params.suspensionReason?.trim() || "-" },
+      { name: "Pesan Appeal", value: params.message.slice(0, 1000) },
+    ],
+  });
+}
+
 export async function notifyPaymentConfirmed(params: {
   orderNumber: string;
   buyerName: string;
