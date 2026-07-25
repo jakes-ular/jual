@@ -1,19 +1,19 @@
 // Prisma schema for the Roblox asset marketplace.
 //
-// DEV DATABASE: SQLite (file-based, zero external services — this sandbox has
-// no Docker/Postgres available). Swap to Postgres for staging/production by:
-//   1. changing `provider = "sqlite"` below to `provider = "postgresql"`
-//   2. setting DATABASE_URL to a postgres:// connection string in .env
-//   3. re-running `npx prisma migrate dev`
-// The schema intentionally avoids native Postgres-only types so this move
-// requires no model changes.
+// PRODUCTION DATABASE: PostgreSQL (via DATABASE_URL). Originally scaffolded
+// against SQLite for a sandbox with no Docker/Postgres available — the schema
+// intentionally avoids native Postgres-only types (enums, arrays) so that
+// move required no model changes, only this datasource block.
+// Local dev can still point DATABASE_URL at a local Postgres instance, or at
+// `file:./dev.db` with provider flipped back to "sqlite" if you need to work
+// offline.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

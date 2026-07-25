@@ -1,14 +1,13 @@
 import sharp from "sharp";
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
+import { saveImageBuffer } from "../src/lib/storage";
 
 /**
  * Renders a simple gradient + label PNG so seed products have real image
  * files to display (no external network / stock-photo dependency). Swap for
  * real product photography by re-uploading through the admin panel later.
+ * Goes through the same storage adapter as admin uploads, so seeding writes
+ * to Vercel Blob in production and to local disk in dev.
  */
-
-const OUT_DIR = path.join(process.cwd(), "public", "uploads", "products", "seed");
 
 let counter = 0;
 
@@ -38,7 +37,6 @@ export async function generatePlaceholder(params: {
   from: string;
   to: string;
 }): Promise<string> {
-  await mkdir(OUT_DIR, { recursive: true });
   counter += 1;
 
   const { label, tag, from, to } = params;
@@ -79,9 +77,8 @@ export async function generatePlaceholder(params: {
   `;
 
   const fileName = `seed-${counter}-${Date.now()}.png`;
-  const outPath = path.join(OUT_DIR, fileName);
+  const buffer = await sharp(Buffer.from(svg)).png().toBuffer();
+  const stored = await saveImageBuffer(buffer, fileName, "image/png");
 
-  await sharp(Buffer.from(svg)).png().toFile(outPath);
-
-  return `/uploads/products/seed/${fileName}`;
+  return stored.url;
 }

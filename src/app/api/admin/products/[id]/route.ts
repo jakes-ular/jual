@@ -63,8 +63,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   for (const img of existing.images) {
     if (!keptImageUrls.has(img.url)) {
-      const storagePath = img.url.replace(/^\/uploads\//, "");
-      await deleteStoredFile(storagePath);
+      await deleteStoredFile(img.url);
     }
   }
   for (const f of existing.files) {
@@ -115,7 +114,7 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
   }
 
   for (const img of product.images) {
-    await deleteStoredFile(img.url.replace(/^\/uploads\//, ""));
+    await deleteStoredFile(img.url);
   }
   for (const f of product.files) {
     await deleteStoredFile(f.storagePath);

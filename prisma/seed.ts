@@ -1,23 +1,20 @@
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { generatePlaceholder } from "./placeholder";
 import { slugify } from "../src/lib/utils";
+import { saveFileBuffer } from "../src/lib/storage";
 
 const prisma = new PrismaClient();
 
-const FILES_DIR = path.join(process.cwd(), "public", "uploads", "files");
-
 async function makePlaceholderFile(productSlug: string, fileName: string, kb = 512) {
-  await mkdir(FILES_DIR, { recursive: true });
   const storageName = `seed-${productSlug}-${Date.now()}${path.extname(fileName)}`;
   const content = `VoxMarket demo asset file for "${productSlug}"\nThis is placeholder content standing in for the real digital asset.\n`.repeat(
     Math.max(1, Math.floor((kb * 1024) / 90))
   );
-  await writeFile(path.join(FILES_DIR, storageName), content);
-  return { storagePath: `files/${storageName}`, sizeBytes: Buffer.byteLength(content) };
+  const stored = await saveFileBuffer(Buffer.from(content), storageName);
+  return { storagePath: stored.storagePath, sizeBytes: stored.sizeBytes };
 }
 
 interface SeedProduct {

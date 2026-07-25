@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { readFile } from "fs/promises";
 import { verifyDownloadToken } from "@/lib/download-token";
-import { resolveStoragePath } from "@/lib/storage";
+import { readStoredFile } from "@/lib/storage";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(req: Request, { params }: { params: Promise<{ token: string }> }) {
@@ -25,7 +24,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
 
   let buffer: Buffer;
   try {
-    buffer = await readFile(resolveStoragePath(file.storagePath));
+    buffer = await readStoredFile(file.storagePath);
   } catch {
     return NextResponse.json({ error: "File tidak ditemukan di server" }, { status: 404 });
   }
