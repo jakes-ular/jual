@@ -35,6 +35,7 @@ export async function notifyNewOrder(params: {
   orderNumber: string;
   buyerName: string;
   buyerEmail: string;
+  buyerDiscord: string;
   total: string;
   method: string;
   referenceCode: string;
@@ -48,6 +49,7 @@ export async function notifyNewOrder(params: {
       { name: "Kode Referensi", value: params.referenceCode, inline: true },
       { name: "Metode", value: params.method, inline: true },
       { name: "Pembeli", value: `${params.buyerName} (${params.buyerEmail})` },
+      { name: "Username Discord", value: params.buyerDiscord, inline: true },
       { name: "Total", value: params.total, inline: true },
       { name: "Produk", value: params.itemNames.join(", ") },
     ],

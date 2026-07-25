@@ -23,6 +23,7 @@ export function CheckoutView() {
   const [mounted, setMounted] = useState(false);
   const [buyerName, setBuyerName] = useState("");
   const [buyerEmail, setBuyerEmail] = useState("");
+  const [buyerDiscord, setBuyerDiscord] = useState("");
   const [method, setMethod] = useState<PaymentMethod>("QRIS");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -46,8 +47,8 @@ export function CheckoutView() {
     e.preventDefault();
     setError("");
 
-    if (!buyerName.trim() || !buyerEmail.trim()) {
-      setError("Nama dan email wajib diisi");
+    if (!buyerName.trim() || !buyerEmail.trim() || !buyerDiscord.trim()) {
+      setError("Nama, email, dan username Discord wajib diisi");
       return;
     }
 
@@ -59,6 +60,7 @@ export function CheckoutView() {
         body: JSON.stringify({
           buyerName,
           buyerEmail,
+          buyerDiscord,
           method,
           items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
         }),
@@ -122,6 +124,16 @@ export function CheckoutView() {
                     type="email"
                     value={buyerEmail}
                     onChange={(e) => setBuyerEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="buyerDiscord">Username Discord</Label>
+                  <Input
+                    id="buyerDiscord"
+                    placeholder="contoh: namamu"
+                    value={buyerDiscord}
+                    onChange={(e) => setBuyerDiscord(e.target.value)}
                     required
                   />
                 </div>

@@ -39,6 +39,7 @@ export const categorySchema = z.object({
 export const checkoutSchema = z.object({
   buyerName: z.string().min(2, "Nama wajib diisi"),
   buyerEmail: z.string().email("Email tidak valid"),
+  buyerDiscord: z.string().min(2, "Username Discord wajib diisi"),
   method: z.enum(["QRIS", "GOPAY", "OVO", "DANA", "SHOPEEPAY", "BANK_TRANSFER", "VIRTUAL_ACCOUNT"]),
 });
 
