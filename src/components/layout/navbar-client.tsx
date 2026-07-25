@@ -54,11 +54,8 @@ export function NavbarClient({ categories }: { categories: Category[] }) {
     <header className="sticky top-0 z-40 glass">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center gap-4">
-          <Link href="/" className="flex items-center gap-2.5 shrink-0">
-            <LogoMark />
-            <span className="font-display font-bold text-lg tracking-tight hidden sm:block">
-              ARK <span className="text-gradient">DIGITAL</span>
-            </span>
+          <Link href="/" className="flex items-center shrink-0">
+            <LogoMark className="h-12 w-12 sm:h-14 sm:w-14" />
           </Link>
 
           <nav className="hidden lg:flex items-center gap-1 ml-2">

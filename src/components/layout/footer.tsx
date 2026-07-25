@@ -22,11 +22,8 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="flex items-center gap-2.5">
-              <LogoMark />
-              <span className="font-display font-bold text-lg">
-                ARK <span className="text-gradient">DIGITAL</span>
-              </span>
+            <Link href="/" className="flex items-center -ml-2">
+              <LogoMark className="h-16 w-16" />
             </Link>
             <p className="mt-4 text-sm text-muted leading-relaxed max-w-xs">
               Marketplace aset Roblox premium untuk developer — GFX, model 3D, map, UI, script,
