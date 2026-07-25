@@ -17,6 +17,7 @@ export async function GET(req: Request) {
       email: true,
       role: true,
       status: true,
+      suspensionReason: true,
       createdAt: true,
       _count: { select: { orders: true } },
     },

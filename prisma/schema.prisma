@@ -32,6 +32,7 @@ model User {
   passwordHash  String
   role          String    @default("USER")
   status        String    @default("ACTIVE")
+  suspensionReason String?
   avatarUrl     String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -123,7 +124,7 @@ model Order {
   id            String    @id @default(cuid())
   orderNumber   String    @unique
   userId        String
-  user          User      @relation(fields: [userId], references: [id])
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   buyerName     String
   buyerEmail    String
   buyerContact  String
@@ -174,7 +175,7 @@ model Payment {
 model Download {
   id            String    @id @default(cuid())
   userId        String
-  user          User      @relation(fields: [userId], references: [id])
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   productFileId String
   productFile   ProductFile @relation(fields: [productFileId], references: [id])
   downloadedAt  DateTime  @default(now())
@@ -189,7 +190,7 @@ model Review {
   productId String
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   rating    Int      // 1-5
   comment   String?
   createdAt DateTime @default(now())

@@ -5,7 +5,7 @@ import { Sparkles, ShieldCheck, Zap, Users } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "About",
-  description: "Kenali VoxMarket, marketplace aset Roblox premium untuk developer.",
+  description: "Kenali ARK DIGITAL, marketplace aset Roblox premium untuk developer.",
 };
 
 const values = [
@@ -38,10 +38,10 @@ export default function AboutPage() {
       <main className="flex-1">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
           <h1 className="font-display font-bold text-3xl sm:text-4xl text-center">
-            Tentang <span className="text-gradient">VoxMarket</span>
+            Tentang <span className="text-gradient">ARK DIGITAL</span>
           </h1>
           <p className="text-muted text-center mt-4 max-w-2xl mx-auto leading-relaxed">
-            VoxMarket adalah marketplace aset Roblox premium yang menghubungkan developer dengan
+            ARK DIGITAL adalah marketplace aset Roblox premium yang menghubungkan developer dengan
             kreator berbakat. Kami menyediakan GFX, model 3D, map, UI, script, VFX, SFX, sistem,
             hingga kendaraan siap pakai untuk mempercepat proses development game Roblox Anda.
           </p>

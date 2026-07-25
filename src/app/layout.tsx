@@ -20,7 +20,7 @@ const sora = Sora({
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-const siteName = process.env.NEXT_PUBLIC_SITE_NAME ?? "VoxMarket";
+const siteName = process.env.NEXT_PUBLIC_SITE_NAME ?? "ARK DIGITAL";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

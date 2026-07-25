@@ -4,7 +4,7 @@ import { Footer } from "@/components/layout/footer";
 
 export const metadata: Metadata = {
   title: "Terms & Conditions",
-  description: "Syarat dan ketentuan penggunaan VoxMarket.",
+  description: "Syarat dan ketentuan penggunaan ARK DIGITAL.",
 };
 
 export default function TermsPage() {
@@ -18,12 +18,12 @@ export default function TermsPage() {
 
           <div className="prose-legal space-y-8 text-sm text-muted leading-relaxed">
             <Section title="1. Penerimaan Ketentuan">
-              Dengan mengakses dan menggunakan VoxMarket, Anda menyetujui untuk terikat oleh syarat
+              Dengan mengakses dan menggunakan ARK DIGITAL, Anda menyetujui untuk terikat oleh syarat
               dan ketentuan ini. Jika Anda tidak menyetujui ketentuan ini, mohon untuk tidak
               menggunakan layanan kami.
             </Section>
             <Section title="2. Lisensi Aset Digital">
-              Setiap pembelian aset digital di VoxMarket memberikan Anda lisensi penggunaan pribadi
+              Setiap pembelian aset digital di ARK DIGITAL memberikan Anda lisensi penggunaan pribadi
               atau komersial sesuai dengan yang tercantum pada halaman produk. Aset tidak boleh
               dijual kembali, didistribusikan ulang, atau dibagikan tanpa izin tertulis dari
               kreator.
@@ -39,11 +39,11 @@ export default function TermsPage() {
               tanggung jawab penjual.
             </Section>
             <Section title="5. Akun Pengguna">
-              Anda bertanggung jawab untuk menjaga kerahasiaan kredensial akun Anda. VoxMarket
+              Anda bertanggung jawab untuk menjaga kerahasiaan kredensial akun Anda. ARK DIGITAL
               berhak menangguhkan akun yang terindikasi melakukan pelanggaran ketentuan layanan.
             </Section>
             <Section title="6. Batasan Tanggung Jawab">
-              VoxMarket tidak bertanggung jawab atas kerugian tidak langsung yang timbul dari
+              ARK DIGITAL tidak bertanggung jawab atas kerugian tidak langsung yang timbul dari
               penggunaan aset yang dibeli melalui platform kami.
             </Section>
             <Section title="7. Perubahan Ketentuan">

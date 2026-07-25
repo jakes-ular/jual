@@ -1,4 +1,4 @@
-# VoxMarket — Premium Roblox Assets Marketplace
+# ARK DIGITAL — Premium Roblox Assets Marketplace
 
 Full-stack e-commerce marketplace for Roblox digital assets (GFX, 3D models, maps, UI kits,
 scripts, vehicles, clothing, VFX, SFX, gameplay systems). Built with Next.js App Router,

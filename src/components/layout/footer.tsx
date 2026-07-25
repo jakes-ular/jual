@@ -23,10 +23,10 @@ export function Footer() {
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2">
               <span className="h-8 w-8 rounded-lg bg-gradient-brand flex items-center justify-center font-display font-extrabold text-white text-sm">
-                V
+                A
               </span>
               <span className="font-display font-extrabold text-lg">
-                Vox<span className="text-gradient">Market</span>
+                ARK <span className="text-gradient">DIGITAL</span>
               </span>
             </Link>
             <p className="mt-4 text-sm text-muted leading-relaxed max-w-xs">
@@ -52,15 +52,15 @@ export function Footer() {
           <div>
             <h4 className="font-display font-semibold text-sm mb-4">Contact</h4>
             <ul className="space-y-2.5 text-sm text-muted">
-              <li>support@voxmarket.dev</li>
-              <li>Discord: voxmarket.gg/discord</li>
+              <li>support@arkdigital.com</li>
+              <li>Discord: arkdigital.com/discord</li>
               <li>Jakarta, Indonesia</li>
             </ul>
           </div>
         </div>
 
         <div className="mt-12 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-2">
-          <p>&copy; {new Date().getFullYear()} VoxMarket. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} ARK DIGITAL. All rights reserved.</p>
           <p>Bukan produk resmi Roblox Corporation.</p>
         </div>
       </div>

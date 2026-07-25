@@ -5,7 +5,7 @@ import { ContactForm } from "./contact-form";
 
 export const metadata: Metadata = {
   title: "Contact",
-  description: "Hubungi tim VoxMarket untuk pertanyaan, dukungan, atau kerja sama.",
+  description: "Hubungi tim ARK DIGITAL untuk pertanyaan, dukungan, atau kerja sama.",
 };
 
 export default function ContactPage() {

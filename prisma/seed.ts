@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 
 async function makePlaceholderFile(productSlug: string, fileName: string, kb = 512) {
   const storageName = `seed-${productSlug}-${Date.now()}${path.extname(fileName)}`;
-  const content = `VoxMarket demo asset file for "${productSlug}"\nThis is placeholder content standing in for the real digital asset.\n`.repeat(
+  const content = `ARK DIGITAL demo asset file for "${productSlug}"\nThis is placeholder content standing in for the real digital asset.\n`.repeat(
     Math.max(1, Math.floor((kb * 1024) / 90))
   );
   const stored = await saveFileBuffer(Buffer.from(content), storageName);
@@ -457,7 +457,7 @@ async function main() {
     where: { email: adminEmail },
     update: {},
     create: {
-      name: "VoxMarket Admin",
+      name: "ARK DIGITAL Admin",
       email: adminEmail,
       passwordHash: adminHash,
       role: "ADMIN",
@@ -562,22 +562,22 @@ async function main() {
 
   // ---- Site settings ----
   const settings: Record<string, string> = {
-    storeName: "VoxMarket",
+    storeName: "ARK DIGITAL",
     storeTagline: "Premium Roblox Assets for Your Next Project",
     heroTitle: "Premium Roblox Assets for Your Next Project",
     heroSubtitle:
       "Temukan ribuan aset Roblox berkualitas tinggi — GFX, model 3D, map, UI, script, VFX, SFX, dan sistem siap pakai untuk mempercepat development game Anda.",
     logoUrl: "",
     bannerUrl: "",
-    contactEmail: "support@voxmarket.dev",
-    contactDiscord: "voxmarket.gg/discord",
-    socialTwitter: "https://twitter.com/voxmarket",
-    socialYoutube: "https://youtube.com/@voxmarket",
-    socialInstagram: "https://instagram.com/voxmarket",
+    contactEmail: "support@arkdigital.com",
+    contactDiscord: "arkdigital.com/discord",
+    socialTwitter: "https://twitter.com/arkdigital",
+    socialYoutube: "https://youtube.com/@arkdigital",
+    socialInstagram: "https://instagram.com/arkdigital",
     footerText: "Marketplace aset Roblox premium untuk developer.",
     bankName: "Bank Central Asia (BCA)",
     bankAccountNumber: "1234567890",
-    bankAccountName: "PT VoxMarket Digital Kreasi",
+    bankAccountName: "PT ARK Digital Kreasi",
     ewalletNumber: "0812-3456-7890",
   };
 

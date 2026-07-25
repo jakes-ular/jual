@@ -55,10 +55,10 @@ export function NavbarClient({ categories }: { categories: Category[] }) {
         <div className="flex h-16 items-center gap-4">
           <Link href="/" className="flex items-center gap-2 shrink-0">
             <span className="h-8 w-8 rounded-lg bg-gradient-brand flex items-center justify-center font-display font-extrabold text-white text-sm">
-              V
+              A
             </span>
             <span className="font-display font-extrabold text-lg tracking-tight hidden sm:block">
-              Vox<span className="text-gradient">Market</span>
+              ARK <span className="text-gradient">DIGITAL</span>
             </span>
           </Link>
 

@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
 import { Search, Trash2 } from "lucide-react";
-import { Input, Select } from "@/components/ui/input";
+import { Input, Select, Textarea } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
@@ -16,6 +16,7 @@ interface AdminUser {
   email: string;
   role: string;
   status: string;
+  suspensionReason: string | null;
   createdAt: string;
   _count: { orders: number };
 }
@@ -25,6 +26,8 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
+  const [suspendTarget, setSuspendTarget] = useState<AdminUser | null>(null);
+  const [suspendReason, setSuspendReason] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -41,7 +44,7 @@ export default function AdminUsersPage() {
     return () => clearTimeout(t);
   }, [load]);
 
-  async function updateUser(user: AdminUser, patch: Partial<{ status: string; role: string }>) {
+  async function updateUser(user: AdminUser, patch: Partial<{ status: string; role: string; suspensionReason: string | null }>) {
     try {
       const res = await fetch(`/api/admin/users/${user.id}`, {
         method: "PATCH",
@@ -55,6 +58,21 @@ export default function AdminUsersPage() {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Gagal memperbarui user");
     }
+  }
+
+  function toggleStatus(user: AdminUser) {
+    if (user.status === "ACTIVE") {
+      setSuspendReason("");
+      setSuspendTarget(user);
+    } else {
+      updateUser(user, { status: "ACTIVE" });
+    }
+  }
+
+  async function confirmSuspend() {
+    if (!suspendTarget) return;
+    await updateUser(suspendTarget, { status: "SUSPENDED", suspensionReason: suspendReason.trim() || null });
+    setSuspendTarget(null);
   }
 
   async function confirmDelete() {
@@ -113,7 +131,7 @@ export default function AdminUsersPage() {
                     </Select>
                   </td>
                   <td className="px-4 py-3">
-                    <button onClick={() => updateUser(u, { status: u.status === "ACTIVE" ? "SUSPENDED" : "ACTIVE" })}>
+                    <button onClick={() => toggleStatus(u)} title={u.suspensionReason ?? undefined}>
                       <Badge variant={u.status === "ACTIVE" ? "success" : "danger"}>{u.status}</Badge>
                     </button>
                   </td>
@@ -134,13 +152,48 @@ export default function AdminUsersPage() {
       <Dialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Hapus User">
         <p className="text-sm text-muted mb-5">
           Yakin ingin menghapus user <span className="text-foreground font-medium">{deleteTarget?.name}</span>?
+          {deleteTarget && deleteTarget._count.orders > 0 && (
+            <>
+              {" "}
+              User ini punya {deleteTarget._count.orders} order.{" "}
+              {deleteTarget.status === "SUSPENDED"
+                ? "Karena akun sudah SUSPENDED, riwayat order/download/review-nya akan ikut terhapus permanen."
+                : "Suspend akun ini dulu sebelum bisa dihapus."}
+            </>
+          )}
         </p>
         <div className="flex justify-end gap-2">
           <Button variant="ghost" onClick={() => setDeleteTarget(null)}>
             Batal
           </Button>
-          <Button variant="danger" onClick={confirmDelete}>
+          <Button
+            variant="danger"
+            onClick={confirmDelete}
+            disabled={!!deleteTarget && deleteTarget._count.orders > 0 && deleteTarget.status !== "SUSPENDED"}
+          >
             Hapus
+          </Button>
+        </div>
+      </Dialog>
+
+      <Dialog open={!!suspendTarget} onClose={() => setSuspendTarget(null)} title="Suspend User">
+        <p className="text-sm text-muted mb-3">
+          Menangguhkan <span className="text-foreground font-medium">{suspendTarget?.name}</span>. User tidak akan
+          bisa memakai situs dan hanya melihat pesan di bawah ini sampai diaktifkan lagi.
+        </p>
+        <Textarea
+          value={suspendReason}
+          onChange={(e) => setSuspendReason(e.target.value)}
+          placeholder="Alasan suspend (opsional, ditampilkan ke user)..."
+          rows={3}
+          className="mb-5"
+        />
+        <div className="flex justify-end gap-2">
+          <Button variant="ghost" onClick={() => setSuspendTarget(null)}>
+            Batal
+          </Button>
+          <Button variant="danger" onClick={confirmSuspend}>
+            Suspend
           </Button>
         </div>
       </Dialog>

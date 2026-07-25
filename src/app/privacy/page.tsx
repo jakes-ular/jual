@@ -4,7 +4,7 @@ import { Footer } from "@/components/layout/footer";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "Kebijakan privasi VoxMarket.",
+  description: "Kebijakan privasi ARK DIGITAL.",
 };
 
 export default function PrivacyPage() {

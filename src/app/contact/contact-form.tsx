@@ -90,8 +90,8 @@ export function ContactForm() {
           </div>
 
           <div className="lg:col-span-2 space-y-4">
-            <ContactInfo icon={Mail} title="Email" value="support@voxmarket.dev" />
-            <ContactInfo icon={MessageCircle} title="Discord" value="voxmarket.gg/discord" />
+            <ContactInfo icon={Mail} title="Email" value="support@arkdigital.com" />
+            <ContactInfo icon={MessageCircle} title="Discord" value="arkdigital.com/discord" />
             <ContactInfo icon={MapPin} title="Lokasi" value="Jakarta, Indonesia" />
           </div>
         </div>

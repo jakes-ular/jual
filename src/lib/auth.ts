@@ -31,10 +31,6 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Email atau password salah");
         }
 
-        if (user.status === "SUSPENDED") {
-          throw new Error("Akun Anda telah ditangguhkan. Hubungi admin.");
-        }
-
         const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
         if (!isValid) {
           throw new Error("Email atau password salah");
@@ -45,6 +41,7 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           email: user.email,
           role: user.role,
+          status: user.status,
           image: user.avatarUrl ?? undefined,
         };
       },
@@ -55,6 +52,18 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.role = (user as { role: string }).role;
+        token.status = (user as { status: string }).status;
+      } else if (token.id) {
+        // Re-check status/role on every request so a suspension takes
+        // effect immediately instead of waiting for the JWT to expire.
+        const fresh = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { role: true, status: true },
+        });
+        if (fresh) {
+          token.role = fresh.role;
+          token.status = fresh.status;
+        }
       }
       return token;
     },
@@ -62,6 +71,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
+        session.user.status = token.status as string;
       }
       return session;
     },
