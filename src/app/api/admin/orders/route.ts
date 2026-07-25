@@ -20,7 +20,7 @@ export async function GET(req: Request) {
             { orderNumber: { contains: q } },
             { buyerName: { contains: q } },
             { buyerEmail: { contains: q } },
-            { buyerDiscord: { contains: q } },
+            { buyerContact: { contains: q } },
           ],
         }
       : {}),

@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const { items, buyerName, buyerEmail, buyerDiscord, method } = parsed.data;
+  const { items, buyerName, buyerEmail, buyerContact, method } = parsed.data;
   const productIds = items.map((i) => i.productId);
 
   const products = await prisma.product.findMany({
@@ -84,7 +84,7 @@ export async function POST(req: Request) {
       userId: session.user.id,
       buyerName,
       buyerEmail,
-      buyerDiscord,
+      buyerContact,
       subtotal,
       total,
       status: "PENDING",
@@ -106,7 +106,7 @@ export async function POST(req: Request) {
     orderNumber: order.orderNumber,
     buyerName,
     buyerEmail,
-    buyerDiscord,
+    buyerContact,
     total: formatRupiah(total),
     method,
     referenceCode: instructions.referenceCode,

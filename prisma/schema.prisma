@@ -126,7 +126,7 @@ model Order {
   user          User      @relation(fields: [userId], references: [id])
   buyerName     String
   buyerEmail    String
-  buyerDiscord  String
+  buyerContact  String
   subtotal      Int
   total         Int
   status        String    @default("PENDING") // PENDING | PAID | FAILED | CANCELLED | EXPIRED

@@ -23,7 +23,7 @@ export function CheckoutView() {
   const [mounted, setMounted] = useState(false);
   const [buyerName, setBuyerName] = useState("");
   const [buyerEmail, setBuyerEmail] = useState("");
-  const [buyerDiscord, setBuyerDiscord] = useState("");
+  const [buyerContact, setBuyerDiscord] = useState("");
   const [method, setMethod] = useState<PaymentMethod>("QRIS");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -47,8 +47,8 @@ export function CheckoutView() {
     e.preventDefault();
     setError("");
 
-    if (!buyerName.trim() || !buyerEmail.trim() || !buyerDiscord.trim()) {
-      setError("Nama, email, dan username Discord wajib diisi");
+    if (!buyerName.trim() || !buyerEmail.trim() || !buyerContact.trim()) {
+      setError("Nama, email, dan Discord/WhatsApp wajib diisi");
       return;
     }
 
@@ -60,7 +60,7 @@ export function CheckoutView() {
         body: JSON.stringify({
           buyerName,
           buyerEmail,
-          buyerDiscord,
+          buyerContact,
           method,
           items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
         }),
@@ -128,11 +128,11 @@ export function CheckoutView() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="buyerDiscord">Username Discord</Label>
+                  <Label htmlFor="buyerContact">Username Discord / No. WhatsApp</Label>
                   <Input
-                    id="buyerDiscord"
-                    placeholder="contoh: namamu"
-                    value={buyerDiscord}
+                    id="buyerContact"
+                    placeholder="contoh: namamu#0000 atau 08123456789"
+                    value={buyerContact}
                     onChange={(e) => setBuyerDiscord(e.target.value)}
                     required
                   />

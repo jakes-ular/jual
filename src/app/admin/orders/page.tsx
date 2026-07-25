@@ -21,7 +21,7 @@ interface AdminOrder {
   orderNumber: string;
   buyerName: string;
   buyerEmail: string;
-  buyerDiscord: string;
+  buyerContact: string;
   total: number;
   status: string;
   createdAt: string;
@@ -110,7 +110,7 @@ export default function AdminOrdersPage() {
                   <div>
                     <p className="font-medium text-sm">{o.orderNumber}</p>
                     <p className="text-xs text-muted-2 mt-0.5">
-                      {o.buyerName} · {o.buyerEmail} · Discord: {o.buyerDiscord} · {formatDateTime(o.createdAt)}
+                      {o.buyerName} · {o.buyerEmail} · Kontak: {o.buyerContact} · {formatDateTime(o.createdAt)}
                     </p>
                   </div>
                 </div>
