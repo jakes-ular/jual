@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useCartStore } from "@/store/cart-store";
 import { cn } from "@/lib/utils";
+import { LogoMark } from "./logo-mark";
 
 interface Category {
   name: string;
@@ -53,11 +54,9 @@ export function NavbarClient({ categories }: { categories: Category[] }) {
     <header className="sticky top-0 z-40 glass">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center gap-4">
-          <Link href="/" className="flex items-center gap-2 shrink-0">
-            <span className="h-8 w-8 rounded-lg bg-gradient-brand flex items-center justify-center font-display font-extrabold text-white text-sm">
-              A
-            </span>
-            <span className="font-display font-extrabold text-lg tracking-tight hidden sm:block">
+          <Link href="/" className="flex items-center gap-2.5 shrink-0">
+            <LogoMark />
+            <span className="font-display font-bold text-lg tracking-tight hidden sm:block">
               ARK <span className="text-gradient">DIGITAL</span>
             </span>
           </Link>
