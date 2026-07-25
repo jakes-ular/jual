@@ -8,6 +8,7 @@ import { getPaymentProvider } from "@/lib/payment";
 import { notifyNewOrder } from "@/lib/discord";
 import { formatRupiah } from "@/lib/utils";
 import { z } from "zod";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 const bodySchema = checkoutSchema.extend({
   items: z
@@ -24,6 +25,10 @@ export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return NextResponse.json({ error: "Anda harus login untuk checkout" }, { status: 401 });
+  }
+
+  if (!rateLimit(`checkout:${session.user.id}`, 10, 60 * 1000)) {
+    return NextResponse.json({ error: "Terlalu banyak percobaan checkout. Coba lagi sebentar lagi." }, { status: 429 });
   }
 
   const body = await req.json().catch(() => null);

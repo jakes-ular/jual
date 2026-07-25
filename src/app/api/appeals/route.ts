@@ -4,6 +4,7 @@ import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { notifyAppeal } from "@/lib/discord";
+import { rateLimit } from "@/lib/rate-limit";
 
 const appealSchema = z.object({
   message: z.string().min(10, "Pesan minimal 10 karakter").max(1000),
@@ -16,6 +17,9 @@ export async function POST(req: Request) {
   }
   if (session.user.status !== "SUSPENDED") {
     return NextResponse.json({ error: "Fitur ini hanya untuk akun yang disuspend" }, { status: 400 });
+  }
+  if (!rateLimit(`appeal:${session.user.id}`, 5, 5 * 60 * 1000)) {
+    return NextResponse.json({ error: "Terlalu banyak percobaan. Coba lagi nanti." }, { status: 429 });
   }
 
   const body = await req.json().catch(() => null);
