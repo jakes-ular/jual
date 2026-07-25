@@ -1,0 +1,216 @@
+// Prisma schema for the Roblox asset marketplace.
+//
+// DEV DATABASE: SQLite (file-based, zero external services — this sandbox has
+// no Docker/Postgres available). Swap to Postgres for staging/production by:
+//   1. changing `provider = "sqlite"` below to `provider = "postgresql"`
+//   2. setting DATABASE_URL to a postgres:// connection string in .env
+//   3. re-running `npx prisma migrate dev`
+// The schema intentionally avoids native Postgres-only types so this move
+// requires no model changes.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Enums (stored as plain strings for SQLite compatibility) ----------
+// Role: "USER" | "ADMIN"
+// UserStatus: "ACTIVE" | "SUSPENDED"
+// ProductStatus: "PUBLISHED" | "DRAFT"
+// OrderStatus: "PENDING" | "PAID" | "FAILED" | "CANCELLED" | "EXPIRED"
+// PaymentMethod: "QRIS" | "GOPAY" | "OVO" | "DANA" | "SHOPEEPAY" | "BANK_TRANSFER" | "VIRTUAL_ACCOUNT"
+// PaymentStatus: "PENDING" | "SUCCESS" | "FAILED" | "EXPIRED"
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  passwordHash  String
+  role          String    @default("USER")
+  status        String    @default("ACTIVE")
+  avatarUrl     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  orders        Order[]
+  reviews       Review[]
+  wishlists     Wishlist[]
+  downloads     Download[]
+
+  @@index([email])
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  icon        String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  products    Product[]
+}
+
+model Product {
+  id              String    @id @default(cuid())
+  name            String
+  slug            String    @unique
+  shortDescription String?
+  description     String
+  price           Int       // stored in Rupiah, integer, no decimals
+  discountPrice   Int?
+  categoryId      String
+  category        Category  @relation(fields: [categoryId], references: [id])
+  tags            String    @default("") // comma-separated tags for search
+  features        String    @default("") // newline-separated feature bullets
+  fileFormat      String?
+  fileSize        String?
+  compatibility   String?
+  version         String?
+  changelog       String?
+  status          String    @default("DRAFT") // PUBLISHED | DRAFT
+  isFeatured      Boolean   @default(false)
+  isBestSeller    Boolean   @default(false)
+  salesCount      Int       @default(0)
+  ratingAvg       Float     @default(0)
+  ratingCount     Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  images          ProductImage[]
+  files           ProductFile[]
+  orderItems      OrderItem[]
+  reviews         Review[]
+  wishlists       Wishlist[]
+
+  @@index([categoryId])
+  @@index([status])
+  @@index([slug])
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  alt       String?
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+}
+
+model ProductFile {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  fileName  String
+  storagePath String
+  sizeBytes Int
+  createdAt DateTime @default(now())
+
+  downloads Download[]
+
+  @@index([productId])
+}
+
+model Order {
+  id            String    @id @default(cuid())
+  orderNumber   String    @unique
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  buyerName     String
+  buyerEmail    String
+  subtotal      Int
+  total         Int
+  status        String    @default("PENDING") // PENDING | PAID | FAILED | CANCELLED | EXPIRED
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  paidAt        DateTime?
+
+  items         OrderItem[]
+  payment       Payment?
+
+  @@index([userId])
+  @@index([status])
+  @@index([orderNumber])
+}
+
+model OrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  productName String   // snapshot at time of purchase
+  unitPrice   Int      // snapshot at time of purchase
+  quantity    Int      @default(1)
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Payment {
+  id            String    @id @default(cuid())
+  orderId       String    @unique
+  order         Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  method        String    // QRIS | GOPAY | OVO | DANA | SHOPEEPAY | BANK_TRANSFER | VIRTUAL_ACCOUNT
+  status        String    @default("PENDING") // PENDING | SUCCESS | FAILED | EXPIRED
+  amount        Int
+  referenceCode String    @unique // shown to buyer, referenced in manual confirmation / Discord
+  proofUrl      String?   // optional payment proof uploaded by buyer
+  confirmedById String?   // admin user id who manually confirmed
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  expiresAt     DateTime?
+}
+
+model Download {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  productFileId String
+  productFile   ProductFile @relation(fields: [productFileId], references: [id])
+  downloadedAt  DateTime  @default(now())
+  ipAddress     String?
+
+  @@index([userId])
+  @@index([productFileId])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  rating    Int      // 1-5
+  comment   String?
+  createdAt DateTime @default(now())
+
+  @@unique([productId, userId])
+  @@index([productId])
+}
+
+model Wishlist {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+  @@index([userId])
+}
+
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
