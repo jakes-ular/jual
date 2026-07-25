@@ -51,7 +51,7 @@ export function NavbarClient({ categories }: { categories: Category[] }) {
   ];
 
   return (
-    <header className="sticky top-0 z-40 glass">
+    <header className="sticky top-0 z-40 glass" style={{ viewTransitionName: "site-header" }}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center gap-4">
           <Link href="/" className="flex items-center shrink-0">
@@ -63,7 +63,7 @@ export function NavbarClient({ categories }: { categories: Category[] }) {
               <Link
                 key={l.href}
                 href={l.href}
-                className="px-3 py-2 text-sm font-medium text-foreground/80 hover:text-foreground rounded-lg hover:bg-white/5 transition-colors"
+                className="nav-underline px-3 py-2 text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
               >
                 {l.label}
               </Link>
@@ -74,17 +74,17 @@ export function NavbarClient({ categories }: { categories: Category[] }) {
               onMouseEnter={() => setCatOpen(true)}
               onMouseLeave={() => setCatOpen(false)}
             >
-              <button className="px-3 py-2 text-sm font-medium text-foreground/80 hover:text-foreground rounded-lg hover:bg-white/5 transition-colors inline-flex items-center gap-1">
+              <button className="nav-underline px-3 py-2 text-sm font-medium text-foreground/80 hover:text-foreground transition-colors inline-flex items-center gap-1">
                 Categories <ChevronDown className="h-3.5 w-3.5" />
               </button>
               {catOpen && (
-                <div className="absolute left-0 top-full pt-2 w-56 animate-fade-in">
+                <div className="absolute left-0 top-full pt-2 w-56 popover-in">
                   <div className="rounded-xl glass p-2 grid gap-0.5 glow-ring">
                     {categories.map((c) => (
                       <Link
                         key={c.slug}
                         href={`/catalog?category=${c.slug}`}
-                        className="px-3 py-2 text-sm rounded-lg hover:bg-white/5 text-foreground/85"
+                        className="px-3 py-2 text-sm rounded-lg hover:bg-surface-2 text-foreground/85"
                       >
                         {c.name}
                       </Link>
@@ -108,7 +108,7 @@ export function NavbarClient({ categories }: { categories: Category[] }) {
           <div className="flex items-center gap-2 ml-auto md:ml-0">
             <Link
               href="/cart"
-              className="relative h-10 w-10 flex items-center justify-center rounded-full hover:bg-white/5 transition-colors"
+              className="relative h-10 w-10 flex items-center justify-center rounded-full hover:bg-surface-2 transition-colors"
               aria-label="Keranjang"
             >
               <ShoppingCart className="h-5 w-5" />
@@ -129,28 +129,28 @@ export function NavbarClient({ categories }: { categories: Category[] }) {
                   <UserIcon className="h-4.5 w-4.5" />
                 </button>
                 {userOpen && (
-                  <div className="absolute right-0 top-full pt-2 w-52 animate-fade-in">
+                  <div className="absolute right-0 top-full pt-2 w-52 popover-in">
                     <div className="rounded-xl glass p-2 glow-ring">
                       <div className="px-3 py-2 text-xs text-muted truncate border-b border-border mb-1">
                         {session.user?.email}
                       </div>
                       <Link
                         href="/dashboard"
-                        className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-white/5"
+                        className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-surface-2"
                       >
                         <LayoutDashboard className="h-4 w-4" /> Dashboard
                       </Link>
                       {session.user?.role === "ADMIN" && (
                         <Link
                           href="/admin"
-                          className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-white/5"
+                          className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-surface-2"
                         >
                           <ShieldCheck className="h-4 w-4" /> Admin Panel
                         </Link>
                       )}
                       <button
                         onClick={() => signOut({ callbackUrl: "/" })}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-white/5 text-danger"
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-surface-2 text-danger"
                       >
                         <LogOut className="h-4 w-4" /> Logout
                       </button>
@@ -176,7 +176,7 @@ export function NavbarClient({ categories }: { categories: Category[] }) {
             )}
 
             <button
-              className="lg:hidden h-10 w-10 flex items-center justify-center rounded-lg hover:bg-white/5"
+              className="lg:hidden h-10 w-10 flex items-center justify-center rounded-lg hover:bg-surface-2"
               onClick={() => setMobileOpen((v) => !v)}
               aria-label="Menu"
             >
@@ -208,7 +208,7 @@ export function NavbarClient({ categories }: { categories: Category[] }) {
                 key={l.href}
                 href={l.href}
                 onClick={() => setMobileOpen(false)}
-                className="px-3 py-2.5 text-sm font-medium rounded-lg hover:bg-white/5"
+                className="px-3 py-2.5 text-sm font-medium rounded-lg hover:bg-surface-2"
               >
                 {l.label}
               </Link>
@@ -221,7 +221,7 @@ export function NavbarClient({ categories }: { categories: Category[] }) {
                 key={c.slug}
                 href={`/catalog?category=${c.slug}`}
                 onClick={() => setMobileOpen(false)}
-                className="px-3 py-2 text-sm rounded-lg hover:bg-white/5 text-foreground/85"
+                className="px-3 py-2 text-sm rounded-lg hover:bg-surface-2 text-foreground/85"
               >
                 {c.name}
               </Link>

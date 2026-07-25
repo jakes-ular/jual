@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { ProductCard } from "@/components/product/product-card";
 import { EmptyState } from "@/components/ui/states";
+import { Reveal } from "@/components/ui/reveal";
 import type { ProductCardData } from "@/types/product";
 
 export function ProductSection({
@@ -34,8 +35,10 @@ export function ProductSection({
         <EmptyState title="Belum ada produk" description="Produk akan segera hadir di kategori ini." />
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-          {products.map((p) => (
-            <ProductCard key={p.id} product={p} />
+          {products.map((p, i) => (
+            <Reveal key={p.id} delay={(i % 4) * 60} className="h-full">
+              <ProductCard product={p} />
+            </Reveal>
           ))}
         </div>
       )}
