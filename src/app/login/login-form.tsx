@@ -66,11 +66,6 @@ function LoginFormFields() {
           Masuk
         </Button>
       </form>
-
-      <div className="mt-6 rounded-xl border border-border bg-surface p-4 text-xs text-muted">
-        <p className="font-medium text-foreground/80 mb-1">Akun demo</p>
-        <p>demo@voxmarket.dev / Demo1234!</p>
-      </div>
     </div>
   );
 }

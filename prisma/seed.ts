@@ -465,20 +465,6 @@ async function main() {
   });
   console.log(`Admin user ready: ${adminEmail}`);
 
-  // ---- Demo customer ----
-  const demoHash = await bcrypt.hash("Demo1234!", 12);
-  await prisma.user.upsert({
-    where: { email: "demo@voxmarket.dev" },
-    update: {},
-    create: {
-      name: "Demo Buyer",
-      email: "demo@voxmarket.dev",
-      passwordHash: demoHash,
-      role: "USER",
-    },
-  });
-  console.log("Demo customer ready: demo@voxmarket.dev / Demo1234!");
-
   // ---- Categories ----
   const categoryRecords: Record<string, { id: string }> = {};
   for (const c of categories) {

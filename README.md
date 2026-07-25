@@ -35,8 +35,7 @@ npm run dev
 
 Open http://localhost:3000.
 
-**Admin login:** `admin@voxmarket.dev` / `Admin123!`
-**Demo buyer login:** `demo@voxmarket.dev` / `Demo1234!`
+Seeding creates an admin account using `ADMIN_EMAIL` / `ADMIN_PASSWORD` from your `.env` (no demo buyer account — register one manually if needed).
 
 ### Environment variables (`.env`, see `.env.example`)
 
