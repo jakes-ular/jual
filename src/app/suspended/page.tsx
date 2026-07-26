@@ -4,24 +4,16 @@ import { ShieldAlert } from "lucide-react";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { SuspendedSignOut } from "./suspended-signout";
-import { AppealForm } from "./appeal-form";
 
 export default async function SuspendedPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user) redirect("/login");
   if (session.user.status !== "SUSPENDED") redirect("/");
 
-  const [user, pendingAppeal] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { suspensionReason: true },
-    }),
-    prisma.appeal.findFirst({
-      where: { userId: session.user.id, status: "PENDING" },
-      orderBy: { createdAt: "desc" },
-      select: { message: true, createdAt: true },
-    }),
-  ]);
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { suspensionReason: true },
+  });
 
   return (
     <main className="flex-1 flex items-center justify-center min-h-screen px-4 py-12">
@@ -35,14 +27,6 @@ export default async function SuspendedPage() {
             ? user.suspensionReason
             : "Akun Anda telah ditangguhkan oleh admin. Hubungi kami jika ini sebuah kesalahan."}
         </p>
-
-        <div className="mb-6">
-          <AppealForm
-            pendingAppeal={
-              pendingAppeal ? { message: pendingAppeal.message, createdAt: pendingAppeal.createdAt.toISOString() } : null
-            }
-          />
-        </div>
 
         <SuspendedSignOut />
       </div>

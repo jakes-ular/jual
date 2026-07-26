@@ -19,6 +19,7 @@ export async function GET(req: Request) {
       status: true,
       suspensionReason: true,
       emailVerified: true,
+      lastLoginAt: true,
       createdAt: true,
       _count: { select: { orders: true } },
     },

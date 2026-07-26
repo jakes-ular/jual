@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/ui/states";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatDateTime } from "@/lib/utils";
 
 interface AdminUser {
   id: string;
@@ -18,6 +18,7 @@ interface AdminUser {
   status: string;
   suspensionReason: string | null;
   emailVerified: string | null;
+  lastLoginAt: string | null;
   createdAt: string;
   _count: { orders: number };
 }
@@ -111,6 +112,7 @@ export default function AdminUsersPage() {
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium">Email</th>
                 <th className="px-4 py-3 font-medium">Order</th>
+                <th className="px-4 py-3 font-medium">Login Terakhir</th>
                 <th className="px-4 py-3 font-medium">Bergabung</th>
                 <th className="px-4 py-3 font-medium text-right">Aksi</th>
               </tr>
@@ -143,6 +145,9 @@ export default function AdminUsersPage() {
                     </Badge>
                   </td>
                   <td className="px-4 py-3 text-muted">{u._count.orders}</td>
+                  <td className="px-4 py-3 text-muted-2">
+                    {u.lastLoginAt ? formatDateTime(u.lastLoginAt) : "Belum pernah"}
+                  </td>
                   <td className="px-4 py-3 text-muted-2">{formatDate(u.createdAt)}</td>
                   <td className="px-4 py-3 text-right">
                     <Button size="icon" variant="ghost" className="text-danger" onClick={() => setDeleteTarget(u)}>
