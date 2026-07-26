@@ -20,7 +20,6 @@ export default async function PurchasesPage() {
         select: {
           slug: true,
           name: true,
-          type: true,
           images: { take: 1, orderBy: { position: "asc" } },
           files: { select: { id: true, fileName: true } },
         },
@@ -48,45 +47,48 @@ export default async function PurchasesPage() {
     <div className="space-y-4">
       {items.map((item) => (
         <div key={item.id} className="flex flex-col sm:flex-row gap-4 rounded-2xl border border-border bg-surface p-4">
-          <Link
-            href={`/products/${item.product.slug}`}
-            className="relative h-20 w-20 shrink-0 rounded-xl overflow-hidden bg-surface-2"
-          >
-            {item.product.images[0] ? (
-              <Image src={item.product.images[0].url} alt={item.product.name} fill sizes="80px" className="object-cover" />
-            ) : (
-              <div className="flex h-full items-center justify-center text-muted-2">
-                <ImageOff className="h-6 w-6" />
-              </div>
-            )}
-          </Link>
+          {item.product ? (
+            <>
+              <Link
+                href={`/products/${item.product.slug}`}
+                className="relative h-20 w-20 shrink-0 rounded-xl overflow-hidden bg-surface-2"
+              >
+                {item.product.images[0] ? (
+                  <Image src={item.product.images[0].url} alt={item.product.name} fill sizes="80px" className="object-cover" />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-muted-2">
+                    <ImageOff className="h-6 w-6" />
+                  </div>
+                )}
+              </Link>
 
-          <div className="flex-1 min-w-0">
-            <Link href={`/products/${item.product.slug}`} className="font-medium text-sm hover:text-primary-2">
-              {item.product.name}
-            </Link>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-xs text-muted">
-              <span>No. Order: {item.order.orderNumber}</span>
-              <span>
-                Dibeli {formatDate(item.order.paidAt ?? item.order.createdAt)}
-              </span>
+              <div className="flex-1 min-w-0">
+                <Link href={`/products/${item.product.slug}`} className="font-medium text-sm hover:text-primary-2">
+                  {item.product.name}
+                </Link>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-xs text-muted">
+                  <span>No. Order: {item.order.orderNumber}</span>
+                  <span>
+                    Dibeli {formatDate(item.order.paidAt ?? item.order.createdAt)}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {item.product.files.map((f) => (
+                    <DownloadButton key={f.id} fileId={f.id} label={f.fileName} />
+                  ))}
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-sm">{item.productName}</p>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-xs text-muted">
+                <span>No. Order: {item.order.orderNumber}</span>
+                <span>Dibeli {formatDate(item.order.paidAt ?? item.order.createdAt)}</span>
+              </div>
+              <p className="text-xs text-muted-2 mt-3">Produk ini sudah tidak tersedia.</p>
             </div>
-            {item.product.type === "TOPUP" ? (
-              <div className="mt-3 text-xs">
-                <p className="text-muted">
-                  ID Game: <span className="text-foreground font-medium">{item.topupTargetId}</span>
-                  {item.topupServerId && ` · Server: ${item.topupServerId}`}
-                </p>
-                <p className="text-muted-2 mt-1">Diproses manual oleh admin, cek status di halaman Order.</p>
-              </div>
-            ) : (
-              <div className="flex flex-wrap gap-2 mt-3">
-                {item.product.files.map((f) => (
-                  <DownloadButton key={f.id} fileId={f.id} label={f.fileName} />
-                ))}
-              </div>
-            )}
-          </div>
+          )}
         </div>
       ))}
     </div>

@@ -18,13 +18,7 @@ interface OrderData {
   total: number;
   status: string;
   createdAt: string;
-  items: {
-    productName: string;
-    unitPrice: number;
-    quantity: number;
-    topupTargetId: string | null;
-    topupServerId: string | null;
-  }[];
+  items: { productName: string; unitPrice: number; quantity: number }[];
   payment: {
     method: string;
     status: string;
@@ -141,19 +135,11 @@ export function CheckoutSuccessContent() {
 
               <div className="space-y-2 text-sm">
                 {order.items.map((item, i) => (
-                  <div key={i}>
-                    <div className="flex justify-between text-muted">
-                      <span>
-                        {item.productName} x{item.quantity}
-                      </span>
-                      <span>{formatRupiah(item.unitPrice * item.quantity)}</span>
-                    </div>
-                    {item.topupTargetId && (
-                      <p className="text-xs text-muted-2 mt-0.5">
-                        ID Game: {item.topupTargetId}
-                        {item.topupServerId && ` · Server: ${item.topupServerId}`}
-                      </p>
-                    )}
+                  <div key={i} className="flex justify-between text-muted">
+                    <span>
+                      {item.productName} x{item.quantity}
+                    </span>
+                    <span>{formatRupiah(item.unitPrice * item.quantity)}</span>
                   </div>
                 ))}
               </div>

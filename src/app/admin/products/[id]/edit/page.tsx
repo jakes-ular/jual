@@ -26,7 +26,6 @@ export default async function EditProductPage({ params }: Props) {
         categories={categories}
         productId={product.id}
         initial={{
-          type: product.type as "ASSET" | "TOPUP",
           name: product.name,
           shortDescription: product.shortDescription ?? "",
           description: product.description,

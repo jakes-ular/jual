@@ -24,7 +24,6 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const params = await searchParams;
 
   const categories = await prisma.category.findMany({
-    where: { products: { some: { type: "ASSET", status: "PUBLISHED" } } },
     select: { name: true, slug: true },
     orderBy: { name: "asc" },
   });
@@ -65,7 +64,6 @@ async function CatalogResults({ params }: { params: Record<string, string | unde
     sort: (params.sort as SortOption) ?? "newest",
     page,
     featuredOnly,
-    type: "ASSET",
   });
 
   if (result.items.length === 0) {

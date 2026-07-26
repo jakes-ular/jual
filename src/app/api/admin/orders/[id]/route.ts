@@ -50,6 +50,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     if (becomesPaid && !wasPaid) {
       for (const item of order.items) {
+        if (!item.productId) continue;
         await tx.product.update({
           where: { id: item.productId },
           data: { salesCount: { increment: item.quantity } },

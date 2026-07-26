@@ -26,7 +26,6 @@ interface FileItem {
 }
 
 export interface ProductFormValues {
-  type: "ASSET" | "TOPUP";
   name: string;
   shortDescription: string;
   description: string;
@@ -48,7 +47,6 @@ export interface ProductFormValues {
 }
 
 const emptyForm: ProductFormValues = {
-  type: "ASSET",
   name: "",
   shortDescription: "",
   description: "",
@@ -140,7 +138,7 @@ export function ProductForm({
       setError("Minimal 1 gambar produk wajib diunggah");
       return;
     }
-    if (values.type === "ASSET" && values.files.length === 0) {
+    if (values.files.length === 0) {
       setError("Minimal 1 file digital wajib diunggah");
       return;
     }
@@ -220,33 +218,31 @@ export function ProductForm({
           </div>
         </div>
 
-        {values.type === "ASSET" && (
-          <div className="rounded-2xl border border-border bg-surface p-5 space-y-4">
-            <h2 className="font-semibold text-sm">Informasi File</h2>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="fileFormat">Format File</Label>
-                <Input id="fileFormat" value={values.fileFormat} onChange={(e) => set("fileFormat", e.target.value)} placeholder=".rbxm" />
-              </div>
-              <div>
-                <Label htmlFor="fileSize">Ukuran File</Label>
-                <Input id="fileSize" value={values.fileSize} onChange={(e) => set("fileSize", e.target.value)} placeholder="48 MB" />
-              </div>
-              <div>
-                <Label htmlFor="compatibility">Kompatibilitas</Label>
-                <Input id="compatibility" value={values.compatibility} onChange={(e) => set("compatibility", e.target.value)} />
-              </div>
-              <div>
-                <Label htmlFor="version">Versi</Label>
-                <Input id="version" value={values.version} onChange={(e) => set("version", e.target.value)} placeholder="1.0.0" />
-              </div>
+        <div className="rounded-2xl border border-border bg-surface p-5 space-y-4">
+          <h2 className="font-semibold text-sm">Informasi File</h2>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="fileFormat">Format File</Label>
+              <Input id="fileFormat" value={values.fileFormat} onChange={(e) => set("fileFormat", e.target.value)} placeholder=".rbxm" />
             </div>
             <div>
-              <Label htmlFor="changelog">Changelog</Label>
-              <Textarea id="changelog" rows={2} value={values.changelog} onChange={(e) => set("changelog", e.target.value)} />
+              <Label htmlFor="fileSize">Ukuran File</Label>
+              <Input id="fileSize" value={values.fileSize} onChange={(e) => set("fileSize", e.target.value)} placeholder="48 MB" />
+            </div>
+            <div>
+              <Label htmlFor="compatibility">Kompatibilitas</Label>
+              <Input id="compatibility" value={values.compatibility} onChange={(e) => set("compatibility", e.target.value)} />
+            </div>
+            <div>
+              <Label htmlFor="version">Versi</Label>
+              <Input id="version" value={values.version} onChange={(e) => set("version", e.target.value)} placeholder="1.0.0" />
             </div>
           </div>
-        )}
+          <div>
+            <Label htmlFor="changelog">Changelog</Label>
+            <Textarea id="changelog" rows={2} value={values.changelog} onChange={(e) => set("changelog", e.target.value)} />
+          </div>
+        </div>
 
         <div className="rounded-2xl border border-border bg-surface p-5 space-y-4">
           <h2 className="font-semibold text-sm">Gambar Produk</h2>
@@ -277,44 +273,35 @@ export function ProductForm({
           </div>
         </div>
 
-        {values.type === "ASSET" && (
-          <div className="rounded-2xl border border-border bg-surface p-5 space-y-4">
-            <h2 className="font-semibold text-sm">File Digital (Aset)</h2>
-            <div className="space-y-2">
-              {values.files.map((f, i) => (
-                <div key={f.storagePath} className="flex items-center gap-3 rounded-lg border border-border p-2.5">
-                  <FileArchive className="h-4 w-4 text-primary-2 shrink-0" />
-                  <span className="text-sm flex-1 truncate">{f.fileName}</span>
-                  <span className="text-xs text-muted-2">{formatBytes(f.sizeBytes)}</span>
-                  <button
-                    type="button"
-                    onClick={() => set("files", values.files.filter((_, idx) => idx !== i))}
-                    className="text-muted hover:text-danger"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-            <label className="flex items-center justify-center gap-2 h-11 rounded-xl border-2 border-dashed border-border cursor-pointer hover:border-border-strong text-sm text-muted-2">
-              {uploadingFile ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-              Unggah file digital (.zip, .rbxm, dll)
-              <input type="file" multiple className="hidden" onChange={(e) => handleFileUpload(e.target.files)} />
-            </label>
+        <div className="rounded-2xl border border-border bg-surface p-5 space-y-4">
+          <h2 className="font-semibold text-sm">File Digital (Aset)</h2>
+          <div className="space-y-2">
+            {values.files.map((f, i) => (
+              <div key={f.storagePath} className="flex items-center gap-3 rounded-lg border border-border p-2.5">
+                <FileArchive className="h-4 w-4 text-primary-2 shrink-0" />
+                <span className="text-sm flex-1 truncate">{f.fileName}</span>
+                <span className="text-xs text-muted-2">{formatBytes(f.sizeBytes)}</span>
+                <button
+                  type="button"
+                  onClick={() => set("files", values.files.filter((_, idx) => idx !== i))}
+                  className="text-muted hover:text-danger"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
           </div>
-        )}
+          <label className="flex items-center justify-center gap-2 h-11 rounded-xl border-2 border-dashed border-border cursor-pointer hover:border-border-strong text-sm text-muted-2">
+            {uploadingFile ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+            Unggah file digital (.zip, .rbxm, dll)
+            <input type="file" multiple className="hidden" onChange={(e) => handleFileUpload(e.target.files)} />
+          </label>
+        </div>
       </div>
 
       <div className="space-y-6">
         <div className="rounded-2xl border border-border bg-surface p-5 space-y-4">
           <h2 className="font-semibold text-sm">Harga & Kategori</h2>
-          <div>
-            <Label htmlFor="type">Tipe Produk</Label>
-            <Select id="type" value={values.type} onChange={(e) => set("type", e.target.value as "ASSET" | "TOPUP")}>
-              <option value="ASSET">Aset Digital (file diunduh)</option>
-              <option value="TOPUP">Topup Game (diproses manual ke ID pembeli)</option>
-            </Select>
-          </div>
           <div>
             <Label htmlFor="price">Harga (Rp)</Label>
             <Input id="price" type="number" min={0} value={values.price} onChange={(e) => set("price", e.target.value)} required />

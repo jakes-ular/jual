@@ -14,8 +14,6 @@ interface OrderItem {
   productName: string;
   unitPrice: number;
   quantity: number;
-  topupTargetId: string | null;
-  topupServerId: string | null;
 }
 
 interface AdminOrder {
@@ -129,19 +127,11 @@ export default function AdminOrdersPage() {
                 <div className="border-t border-border p-4 space-y-4">
                   <div className="space-y-1.5 text-sm">
                     {o.items.map((item) => (
-                      <div key={item.id}>
-                        <div className="flex justify-between text-muted">
-                          <span>
-                            {item.productName} x{item.quantity}
-                          </span>
-                          <span>{formatRupiah(item.unitPrice * item.quantity)}</span>
-                        </div>
-                        {item.topupTargetId && (
-                          <p className="text-xs text-primary-2 font-medium mt-0.5">
-                            ID Game: {item.topupTargetId}
-                            {item.topupServerId && ` · Server: ${item.topupServerId}`}
-                          </p>
-                        )}
+                      <div key={item.id} className="flex justify-between text-muted">
+                        <span>
+                          {item.productName} x{item.quantity}
+                        </span>
+                        <span>{formatRupiah(item.unitPrice * item.quantity)}</span>
                       </div>
                     ))}
                   </div>

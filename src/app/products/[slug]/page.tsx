@@ -60,7 +60,7 @@ export default async function ProductDetailPage({ params }: Props) {
 
   if (!product || product.status !== "PUBLISHED") notFound();
 
-  const related = await getRelatedProducts(product.categoryId, product.id, 4, product.type as "ASSET" | "TOPUP");
+  const related = await getRelatedProducts(product.categoryId, product.id, 4);
 
   let canReview = false;
   if (session?.user) {
@@ -158,7 +158,6 @@ export default async function ProductDetailPage({ params }: Props) {
                       name: product.name,
                       price: product.price,
                       discountPrice: product.discountPrice,
-                      type: product.type,
                       category: { name: product.category.name },
                     }}
                     image={product.images[0]?.url ?? null}
@@ -167,20 +166,16 @@ export default async function ProductDetailPage({ params }: Props) {
                 <WishlistButton productId={product.id} />
               </div>
 
-              {product.type === "ASSET" && (
-                <div className="mt-8 grid grid-cols-2 gap-3">
-                  <InfoBox icon={FileText} label="Format File" value={product.fileFormat ?? "-"} />
-                  <InfoBox icon={HardDrive} label="Ukuran File" value={product.fileSize ?? formatBytes(totalFileSize)} />
-                  <InfoBox icon={Layers} label="Kompatibilitas" value={product.compatibility ?? "-"} />
-                  <InfoBox icon={Tag} label="Versi" value={product.version ?? "-"} />
-                </div>
-              )}
+              <div className="mt-8 grid grid-cols-2 gap-3">
+                <InfoBox icon={FileText} label="Format File" value={product.fileFormat ?? "-"} />
+                <InfoBox icon={HardDrive} label="Ukuran File" value={product.fileSize ?? formatBytes(totalFileSize)} />
+                <InfoBox icon={Layers} label="Kompatibilitas" value={product.compatibility ?? "-"} />
+                <InfoBox icon={Tag} label="Versi" value={product.version ?? "-"} />
+              </div>
 
               <div className="mt-6 flex items-center gap-2 text-xs text-muted rounded-lg border border-border p-3">
                 <ShieldCheck className="h-4 w-4 text-success shrink-0" />
-                {product.type === "TOPUP"
-                  ? "Topup diproses manual oleh admin ke ID Game Anda setelah pembayaran dikonfirmasi."
-                  : "Akses download aman dikirim otomatis setelah pembayaran dikonfirmasi."}
+                Akses download aman dikirim otomatis setelah pembayaran dikonfirmasi.
               </div>
             </div>
           </div>
@@ -231,20 +226,16 @@ export default async function ProductDetailPage({ params }: Props) {
             </div>
 
             <aside className="rounded-2xl border border-border bg-surface p-5 h-fit">
-              {product.type === "ASSET" && (
-                <>
-                  <h3 className="font-semibold text-sm mb-3">Informasi File</h3>
-                  <ul className="space-y-2.5 text-sm">
-                    {product.files.map((f) => (
-                      <li key={f.id} className="flex items-center justify-between gap-2">
-                        <span className="text-muted truncate">{f.fileName}</span>
-                        <span className="text-muted-2 text-xs shrink-0">{formatBytes(f.sizeBytes)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
-              <div className={product.type === "ASSET" ? "mt-4 pt-4 border-t border-border text-xs text-muted-2" : "text-xs text-muted-2"}>
+              <h3 className="font-semibold text-sm mb-3">Informasi File</h3>
+              <ul className="space-y-2.5 text-sm">
+                {product.files.map((f) => (
+                  <li key={f.id} className="flex items-center justify-between gap-2">
+                    <span className="text-muted truncate">{f.fileName}</span>
+                    <span className="text-muted-2 text-xs shrink-0">{formatBytes(f.sizeBytes)}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-4 pt-4 border-t border-border text-xs text-muted-2">
                 Ditambahkan {formatDate(product.createdAt)}
               </div>
             </aside>

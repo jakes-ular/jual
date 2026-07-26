@@ -5,7 +5,6 @@ export interface ProductCardData {
   price: number;
   discountPrice: number | null;
   status: string;
-  type: string;
   isFeatured: boolean;
   isBestSeller: boolean;
   salesCount: number;

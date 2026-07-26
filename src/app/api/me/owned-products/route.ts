@@ -10,10 +10,10 @@ export async function GET() {
   }
 
   const items = await prisma.orderItem.findMany({
-    where: { order: { userId: session.user.id, status: "PAID" }, product: { type: "ASSET" } },
+    where: { order: { userId: session.user.id, status: "PAID" } },
     select: { productId: true },
     distinct: ["productId"],
   });
 
-  return NextResponse.json({ productIds: items.map((i) => i.productId) });
+  return NextResponse.json({ productIds: items.flatMap((i) => (i.productId ? [i.productId] : [])) });
 }

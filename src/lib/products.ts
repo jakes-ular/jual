@@ -13,7 +13,6 @@ export interface ProductQuery {
   perPage?: number;
   featuredOnly?: boolean;
   bestSellerOnly?: boolean;
-  type?: "ASSET" | "TOPUP";
 }
 
 const PRODUCT_CARD_SELECT = {
@@ -23,7 +22,6 @@ const PRODUCT_CARD_SELECT = {
   price: true,
   discountPrice: true,
   status: true,
-  type: true,
   isFeatured: true,
   isBestSeller: true,
   salesCount: true,
@@ -56,7 +54,6 @@ export async function queryProducts(query: ProductQuery) {
 
   const where: Prisma.ProductWhereInput = {
     status: "PUBLISHED",
-    type: query.type ?? "ASSET",
     ...(query.featuredOnly ? { isFeatured: true } : {}),
     ...(query.bestSellerOnly ? { isBestSeller: true } : {}),
     ...(query.category ? { category: { slug: query.category } } : {}),
@@ -100,41 +97,36 @@ export async function queryProducts(query: ProductQuery) {
   };
 }
 
-export async function getFeaturedProducts(limit = 8, type: "ASSET" | "TOPUP" = "ASSET") {
+export async function getFeaturedProducts(limit = 8) {
   return prisma.product.findMany({
-    where: { status: "PUBLISHED", isFeatured: true, type },
+    where: { status: "PUBLISHED", isFeatured: true },
     select: PRODUCT_CARD_SELECT,
     orderBy: { createdAt: "desc" },
     take: limit,
   });
 }
 
-export async function getNewArrivals(limit = 8, type: "ASSET" | "TOPUP" = "ASSET") {
+export async function getNewArrivals(limit = 8) {
   return prisma.product.findMany({
-    where: { status: "PUBLISHED", type },
+    where: { status: "PUBLISHED" },
     select: PRODUCT_CARD_SELECT,
     orderBy: { createdAt: "desc" },
     take: limit,
   });
 }
 
-export async function getBestSellers(limit = 8, type: "ASSET" | "TOPUP" = "ASSET") {
+export async function getBestSellers(limit = 8) {
   return prisma.product.findMany({
-    where: { status: "PUBLISHED", isBestSeller: true, type },
+    where: { status: "PUBLISHED", isBestSeller: true },
     select: PRODUCT_CARD_SELECT,
     orderBy: { salesCount: "desc" },
     take: limit,
   });
 }
 
-export async function getRelatedProducts(
-  categoryId: string,
-  excludeId: string,
-  limit = 4,
-  type: "ASSET" | "TOPUP" = "ASSET"
-) {
+export async function getRelatedProducts(categoryId: string, excludeId: string, limit = 4) {
   return prisma.product.findMany({
-    where: { status: "PUBLISHED", categoryId, id: { not: excludeId }, type },
+    where: { status: "PUBLISHED", categoryId, id: { not: excludeId } },
     select: PRODUCT_CARD_SELECT,
     orderBy: { salesCount: "desc" },
     take: limit,

@@ -44,6 +44,7 @@ model User {
   downloads     Download[]
   appeals       Appeal[]
   verificationTokens EmailVerificationToken[]
+  topupOrders   TopupOrder[]
 
   @@index([email])
 }
@@ -74,7 +75,6 @@ model Category {
 
 model Product {
   id              String    @id @default(cuid())
-  type            String    @default("ASSET") // ASSET | TOPUP
   name            String
   slug            String    @unique
   shortDescription String?
@@ -163,13 +163,11 @@ model OrderItem {
   id          String   @id @default(cuid())
   orderId     String
   order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  productId   String
-  product     Product  @relation(fields: [productId], references: [id])
+  productId   String?
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
   productName String   // snapshot at time of purchase
   unitPrice   Int      // snapshot at time of purchase
   quantity    Int      @default(1)
-  topupTargetId String? // buyer's game account/user ID, for TOPUP products
-  topupServerId String? // buyer's zone/server ID, for TOPUP products that need one
 
   @@index([orderId])
   @@index([productId])
@@ -246,4 +244,69 @@ model Appeal {
 
   @@index([userId])
   @@index([status])
+}
+
+// ---------- Topup (game diamond/currency topup) ----------
+// A separate, self-contained subsystem from Product/Order: buyers pick a
+// game, then a denomination, then pay directly (no cart, one order per
+// purchase). Managed from its own admin page, not the Products admin.
+
+model TopupGame {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  icon        String?  // banner/logo image url shown on the game card
+  description String?
+  status      String   @default("DRAFT") // PUBLISHED | DRAFT
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items       TopupItem[]
+
+  @@index([status])
+}
+
+model TopupItem {
+  id        String   @id @default(cuid())
+  gameId    String
+  game      TopupGame @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  name      String    // e.g. "86 Diamond"
+  price     Int
+  status    String    @default("PUBLISHED") // PUBLISHED | DRAFT
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  orders    TopupOrder[]
+
+  @@index([gameId])
+}
+
+model TopupOrder {
+  id            String    @id @default(cuid())
+  orderNumber   String    @unique
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topupItemId   String?
+  topupItem     TopupItem? @relation(fields: [topupItemId], references: [id], onDelete: SetNull)
+  gameName      String    // snapshot at time of purchase
+  itemName      String    // snapshot at time of purchase
+  price         Int       // snapshot at time of purchase
+  targetId      String    // buyer's game account/user ID
+  serverId      String?   // buyer's zone/server ID, when the game needs one
+  buyerName     String
+  buyerEmail    String
+  buyerContact  String
+  method        String    // QRIS | GOPAY | OVO | DANA | SHOPEEPAY | BANK_TRANSFER | VIRTUAL_ACCOUNT
+  referenceCode String    @unique
+  status        String    @default("PENDING") // PENDING | PAID | FAILED | CANCELLED | EXPIRED
+  proofUrl      String?   // required payment proof uploaded by buyer
+  confirmedById String?   // admin user id who manually confirmed
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  paidAt        DateTime?
+  expiresAt     DateTime?
+
+  @@index([userId])
+  @@index([status])
+  @@index([orderNumber])
 }

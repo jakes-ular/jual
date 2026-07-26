@@ -16,8 +16,6 @@ const bodySchema = checkoutSchema.extend({
       z.object({
         productId: z.string().min(1),
         quantity: z.coerce.number().int().min(1).max(10),
-        topupTargetId: z.string().max(100).optional(),
-        topupServerId: z.string().max(50).optional(),
       })
     )
     .min(1, "Keranjang tidak boleh kosong"),
@@ -56,27 +54,13 @@ export async function POST(req: Request) {
     );
   }
 
-  for (const item of items) {
-    const product = products.find((p) => p.id === item.productId)!;
-    if (product.type === "TOPUP" && !item.topupTargetId?.trim()) {
-      return NextResponse.json(
-        { error: `ID Game wajib diisi untuk "${product.name}"` },
-        { status: 400 }
-      );
-    }
-  }
-
   const alreadyOwned = await prisma.orderItem.findFirst({
-    where: {
-      productId: { in: productIds },
-      order: { userId: session.user.id, status: "PAID" },
-      product: { type: "ASSET" },
-    },
+    where: { productId: { in: productIds }, order: { userId: session.user.id, status: "PAID" } },
     include: { product: { select: { name: true } } },
   });
   if (alreadyOwned) {
     return NextResponse.json(
-      { error: `Anda sudah memiliki "${alreadyOwned.product.name}". Hapus dari keranjang.` },
+      { error: `Anda sudah memiliki "${alreadyOwned.product?.name ?? "produk ini"}". Hapus dari keranjang.` },
       { status: 409 }
     );
   }
@@ -89,8 +73,6 @@ export async function POST(req: Request) {
       productName: product.name,
       unitPrice,
       quantity: item.quantity,
-      topupTargetId: product.type === "TOPUP" ? item.topupTargetId?.trim() : undefined,
-      topupServerId: product.type === "TOPUP" ? item.topupServerId?.trim() || undefined : undefined,
     };
   });
 

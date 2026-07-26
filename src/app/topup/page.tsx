@@ -1,31 +1,21 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
+import Link from "next/link";
 import Image from "next/image";
+import { Gamepad2 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { queryProducts, type SortOption } from "@/lib/products";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
-import { CatalogFilters } from "@/components/product/catalog-filters";
-import { ProductCard } from "@/components/product/product-card";
-import { ProductGridSkeleton } from "@/components/ui/skeleton";
-import { NoResults } from "@/components/ui/states";
-import { Pagination } from "@/components/ui/pagination";
+import { EmptyState } from "@/components/ui/states";
 
 export const metadata: Metadata = {
   title: "Topup Game",
   description: "Topup diamond, UC, dan mata uang game favorit Anda — proses cepat dan aman.",
 };
 
-interface TopupPageProps {
-  searchParams: Promise<Record<string, string | undefined>>;
-}
-
-export default async function TopupPage({ searchParams }: TopupPageProps) {
-  const params = await searchParams;
-
-  const categories = await prisma.category.findMany({
-    where: { products: { some: { type: "TOPUP", status: "PUBLISHED" } } },
-    select: { name: true, slug: true },
+export default async function TopupPage() {
+  const games = await prisma.topupGame.findMany({
+    where: { status: "PUBLISHED", items: { some: { status: "PUBLISHED" } } },
+    select: { id: true, name: true, slug: true, icon: true, description: true },
     orderBy: { name: "asc" },
   });
 
@@ -45,50 +35,48 @@ export default async function TopupPage({ searchParams }: TopupPageProps) {
             />
             <h1 className="font-display font-bold text-3xl">Topup Game</h1>
             <p className="text-sm text-muted mt-2 max-w-xl">
-              Topup diamond, UC, dan mata uang game favorit Anda — pilih game, masukkan ID, dan bayar.
+              Pilih game favorit Anda untuk melihat pilihan diamond/UC yang tersedia.
             </p>
           </div>
 
-          <CatalogFilters categories={categories} />
-
-          <Suspense fallback={<ProductGridSkeleton />} key={JSON.stringify(params)}>
-            <TopupResults params={params} />
-          </Suspense>
+          {games.length === 0 ? (
+            <EmptyState icon={Gamepad2} title="Belum ada game tersedia" description="Cek lagi nanti." />
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+              {games.map((g) => (
+                <Link
+                  key={g.id}
+                  href={`/topup/${g.slug}`}
+                  className="group rounded-2xl border border-border bg-surface overflow-hidden hover-lift flex flex-col"
+                >
+                  <div className="relative aspect-square w-full bg-surface-2">
+                    {g.icon ? (
+                      <Image
+                        src={g.icon}
+                        alt={g.name}
+                        fill
+                        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-muted-2">
+                        <Gamepad2 className="h-10 w-10" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <h3 className="text-sm font-semibold">{g.name}</h3>
+                    {g.description && (
+                      <p className="text-xs text-muted mt-1 line-clamp-2">{g.description}</p>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </main>
       <Footer />
-    </>
-  );
-}
-
-async function TopupResults({ params }: { params: Record<string, string | undefined> }) {
-  const page = Number(params.page ?? "1") || 1;
-
-  const result = await queryProducts({
-    q: params.q,
-    category: params.category,
-    minPrice: params.minPrice ? Number(params.minPrice) : undefined,
-    maxPrice: params.maxPrice ? Number(params.maxPrice) : undefined,
-    sort: (params.sort as SortOption) ?? "newest",
-    page,
-    type: "TOPUP",
-  });
-
-  if (result.items.length === 0) {
-    return <NoResults query={params.q} />;
-  }
-
-  return (
-    <>
-      <p className="text-sm text-muted mb-5">
-        Menampilkan {result.items.length} dari {result.total} produk
-      </p>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-        {result.items.map((p) => (
-          <ProductCard key={p.id} product={p} />
-        ))}
-      </div>
-      <Pagination page={result.page} totalPages={result.totalPages} baseUrl="/topup" params={params} />
     </>
   );
 }

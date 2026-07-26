@@ -14,7 +14,6 @@ import { formatRupiah } from "@/lib/utils";
 
 interface AdminProduct {
   id: string;
-  type: string;
   name: string;
   price: number;
   discountPrice: number | null;
@@ -120,7 +119,6 @@ export default function AdminProductsPage() {
                       <div className="min-w-0">
                         <p className="font-medium truncate max-w-[220px]">{p.name}</p>
                         <div className="flex gap-1 mt-0.5">
-                          {p.type === "TOPUP" && <Badge variant="neutral">Topup</Badge>}
                           {p.isFeatured && <Badge variant="featured" />}
                           {p.isBestSeller && <Badge variant="bestseller" />}
                         </div>

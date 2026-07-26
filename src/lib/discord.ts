@@ -106,3 +106,32 @@ export async function notifyPaymentConfirmed(params: {
     ],
   });
 }
+
+export async function notifyNewTopupOrder(params: {
+  orderNumber: string;
+  buyerName: string;
+  buyerEmail: string;
+  buyerContact: string;
+  gameName: string;
+  itemName: string;
+  targetId: string;
+  serverId: string | null;
+  total: string;
+  method: string;
+  referenceCode: string;
+}) {
+  await sendDiscordWebhook({
+    title: "🎮 Order Topup Baru",
+    color: 0xf59e0b,
+    fields: [
+      { name: "No. Order", value: params.orderNumber, inline: true },
+      { name: "Kode Referensi", value: params.referenceCode, inline: true },
+      { name: "Metode", value: params.method, inline: true },
+      { name: "Pembeli", value: `${params.buyerName} (${params.buyerEmail})` },
+      { name: "Discord/WhatsApp", value: params.buyerContact, inline: true },
+      { name: "Total", value: params.total, inline: true },
+      { name: "Game", value: `${params.gameName} — ${params.itemName}` },
+      { name: "ID Game", value: params.serverId ? `${params.targetId} (Server: ${params.serverId})` : params.targetId },
+    ],
+  });
+}

@@ -5,23 +5,18 @@ import { prisma } from "@/lib/prisma";
 import { productSchema } from "@/lib/validations";
 import { deleteStoredFile } from "@/lib/storage";
 
-const updateSchema = productSchema
-  .extend({
-    images: z.array(z.object({ url: z.string().min(1), alt: z.string().optional() })).min(1),
-    files: z
-      .array(
-        z.object({
-          fileName: z.string().min(1),
-          storagePath: z.string().min(1),
-          sizeBytes: z.number().int().min(0),
-        })
-      )
-      .default([]),
-  })
-  .refine((data) => data.type !== "ASSET" || data.files.length > 0, {
-    message: "Minimal 1 file digital wajib diunggah",
-    path: ["files"],
-  });
+const updateSchema = productSchema.extend({
+  images: z.array(z.object({ url: z.string().min(1), alt: z.string().optional() })).min(1),
+  files: z
+    .array(
+      z.object({
+        fileName: z.string().min(1),
+        storagePath: z.string().min(1),
+        sizeBytes: z.number().int().min(0),
+      })
+    )
+    .min(1),
+});
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireAdmin();
@@ -110,12 +105,14 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
   });
   if (!product) return NextResponse.json({ error: "Produk tidak ditemukan" }, { status: 404 });
 
-  const hasOrders = await prisma.orderItem.findFirst({ where: { productId: id } });
-  if (hasOrders) {
-    return NextResponse.json(
-      { error: "Produk tidak bisa dihapus karena sudah memiliki riwayat transaksi. Ubah ke Draft sebagai gantinya." },
-      { status: 409 }
-    );
+  if (product.status !== "DRAFT") {
+    const hasOrders = await prisma.orderItem.findFirst({ where: { productId: id } });
+    if (hasOrders) {
+      return NextResponse.json(
+        { error: "Produk tidak bisa dihapus karena sudah memiliki riwayat transaksi. Ubah ke Draft sebagai gantinya." },
+        { status: 409 }
+      );
+    }
   }
 
   for (const img of product.images) {

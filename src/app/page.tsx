@@ -17,13 +17,7 @@ export default async function HomePage() {
     getNewArrivals(8),
     getBestSellers(8),
     prisma.category.findMany({
-      where: { products: { some: { type: "ASSET", status: "PUBLISHED" } } },
-      select: {
-        name: true,
-        slug: true,
-        icon: true,
-        _count: { select: { products: { where: { type: "ASSET" } } } },
-      },
+      select: { name: true, slug: true, icon: true, _count: { select: { products: true } } },
       orderBy: { name: "asc" },
     }),
   ]);

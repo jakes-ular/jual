@@ -21,7 +21,6 @@ export const resendVerificationSchema = z.object({
 });
 
 export const productSchema = z.object({
-  type: z.enum(["ASSET", "TOPUP"]).default("ASSET"),
   name: z.string().min(3, "Nama produk minimal 3 karakter").max(150),
   shortDescription: z.string().max(200).optional(),
   description: z.string().min(10, "Deskripsi minimal 10 karakter"),
@@ -47,6 +46,29 @@ export const categorySchema = z.object({
 });
 
 export const checkoutSchema = z.object({
+  buyerName: z.string().min(2, "Nama wajib diisi"),
+  buyerEmail: z.string().email("Email tidak valid"),
+  buyerContact: z.string().min(2, "Username Discord atau No. WhatsApp wajib diisi"),
+  method: z.enum(["QRIS", "GOPAY", "OVO", "DANA", "SHOPEEPAY", "BANK_TRANSFER", "VIRTUAL_ACCOUNT"]),
+});
+
+export const topupGameSchema = z.object({
+  name: z.string().min(2, "Nama game minimal 2 karakter").max(80),
+  description: z.string().max(300).optional(),
+  icon: z.string().max(500).optional(),
+  status: z.enum(["PUBLISHED", "DRAFT"]).default("DRAFT"),
+});
+
+export const topupItemSchema = z.object({
+  name: z.string().min(1, "Nama item wajib diisi").max(80),
+  price: z.coerce.number().int().min(0, "Harga tidak valid"),
+  status: z.enum(["PUBLISHED", "DRAFT"]).default("PUBLISHED"),
+});
+
+export const topupCheckoutSchema = z.object({
+  topupItemId: z.string().min(1),
+  targetId: z.string().min(1, "ID Game wajib diisi").max(100),
+  serverId: z.string().max(50).optional(),
   buyerName: z.string().min(2, "Nama wajib diisi"),
   buyerEmail: z.string().email("Email tidak valid"),
   buyerContact: z.string().min(2, "Username Discord atau No. WhatsApp wajib diisi"),

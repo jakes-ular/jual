@@ -11,6 +11,7 @@ import {
   MessageSquareWarning,
   Settings,
   ArrowLeft,
+  Gamepad2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +19,7 @@ const links = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/categories", label: "Categories", icon: FolderTree },
+  { href: "/admin/topup", label: "Topup Game", icon: Gamepad2 },
   { href: "/admin/orders", label: "Orders", icon: ClipboardList },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/appeals", label: "Appeals", icon: MessageSquareWarning },

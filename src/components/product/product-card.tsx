@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingCart, ImageOff, Zap } from "lucide-react";
+import { ShoppingCart, ImageOff } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { RatingStars } from "@/components/ui/rating-stars";
@@ -83,15 +83,9 @@ export function ProductCard({ product }: { product: ProductCardData }) {
           <span className="text-xs text-muted">{product.salesCount} terjual</span>
         )}
 
-        {product.type === "TOPUP" ? (
-          <Button size="sm" className="mt-auto w-full">
-            <Zap className="h-4 w-4" /> Topup Sekarang
-          </Button>
-        ) : (
-          <Button size="sm" className="mt-auto w-full" onClick={handleAddToCart}>
-            <ShoppingCart className="h-4 w-4" /> Add to Cart
-          </Button>
-        )}
+        <Button size="sm" className="mt-auto w-full" onClick={handleAddToCart}>
+          <ShoppingCart className="h-4 w-4" /> Add to Cart
+        </Button>
       </div>
     </Link>
   );

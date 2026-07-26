@@ -5,25 +5,20 @@ import { prisma } from "@/lib/prisma";
 import { productSchema } from "@/lib/validations";
 import { slugify } from "@/lib/utils";
 
-const createSchema = productSchema
-  .extend({
-    images: z
-      .array(z.object({ url: z.string().min(1), alt: z.string().optional() }))
-      .min(1, "Minimal 1 gambar produk wajib diunggah"),
-    files: z
-      .array(
-        z.object({
-          fileName: z.string().min(1),
-          storagePath: z.string().min(1),
-          sizeBytes: z.number().int().min(0),
-        })
-      )
-      .default([]),
-  })
-  .refine((data) => data.type !== "ASSET" || data.files.length > 0, {
-    message: "Minimal 1 file digital wajib diunggah",
-    path: ["files"],
-  });
+const createSchema = productSchema.extend({
+  images: z
+    .array(z.object({ url: z.string().min(1), alt: z.string().optional() }))
+    .min(1, "Minimal 1 gambar produk wajib diunggah"),
+  files: z
+    .array(
+      z.object({
+        fileName: z.string().min(1),
+        storagePath: z.string().min(1),
+        sizeBytes: z.number().int().min(0),
+      })
+    )
+    .min(1, "Minimal 1 file digital wajib diunggah"),
+});
 
 export async function GET(req: Request) {
   const auth = await requireAdmin();
