@@ -12,6 +12,7 @@ import {
   Settings,
   ArrowLeft,
   Gamepad2,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +24,7 @@ const links = [
   { href: "/admin/orders", label: "Orders", icon: ClipboardList },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/appeals", label: "Appeals", icon: MessageSquareWarning },
+  { href: "/admin/roblox-whitelist", label: "Roblox Whitelist", icon: ShieldCheck },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 

@@ -89,3 +89,8 @@ export const passwordChangeSchema = z.object({
   currentPassword: z.string().min(1, "Password saat ini wajib diisi"),
   newPassword: z.string().min(8, "Password baru minimal 8 karakter"),
 });
+
+export const robloxWhitelistSchema = z.object({
+  robloxUsername: z.string().min(3, "Username Roblox minimal 3 karakter").max(50),
+  note: z.string().max(200).optional(),
+});

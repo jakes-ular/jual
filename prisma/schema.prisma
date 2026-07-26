@@ -234,6 +234,20 @@ model Setting {
   updatedAt DateTime @updatedAt
 }
 
+// Roblox accounts allowed to run the "Marching" command system in the
+// antitest Roblox place. Checked by robloxUserId (not just username, which
+// can change) via GET /api/roblox-whitelist -- see that route and
+// ServerScriptService.Main's security gate in the Roblox place itself.
+model RobloxWhitelist {
+  id             String   @id @default(cuid())
+  robloxUsername String   // snapshot at time of adding, for display only
+  robloxUserId   String   @unique
+  note           String?
+  createdAt      DateTime @default(now())
+
+  @@index([robloxUserId])
+}
+
 model Appeal {
   id         String    @id @default(cuid())
   userId     String
