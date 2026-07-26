@@ -24,17 +24,9 @@ export default async function TopupPage() {
       <Navbar />
       <main className="flex-1">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
-          <div className="mb-8 flex flex-col items-center text-center">
-            <Image
-              src="/Logo topup game.png"
-              alt="Topup Game — Aman, Cepat, Terpercaya"
-              width={180}
-              height={180}
-              className="mb-4"
-              priority
-            />
+          <div className="mb-8">
             <h1 className="font-display font-bold text-3xl">Topup Game</h1>
-            <p className="text-sm text-muted mt-2 max-w-xl">
+            <p className="text-sm text-muted mt-2">
               Pilih game favorit Anda untuk melihat pilihan diamond/UC yang tersedia.
             </p>
           </div>

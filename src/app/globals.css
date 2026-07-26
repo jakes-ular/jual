@@ -19,34 +19,6 @@
   --warning: #f5a524;
 }
 
-/* Topup Game section — dark red theme, scoped so the rest of the site
-   (Roblox asset catalog) keeps the default Prism Ark theme. */
-.theme-topup {
-  --background: #1a0707;
-  --surface: #2a0d0d;
-  --surface-2: #3a1212;
-  --border: rgba(248, 113, 113, 0.18);
-  --border-strong: rgba(248, 113, 113, 0.32);
-  --foreground: #fdf1f1;
-  --muted: #d9a3a3;
-  --muted-2: #a86e6e;
-
-  --primary: #dc2626;
-  --primary-2: #7f1d1d;
-  --accent: #f87171;
-  --danger: #fca5a5;
-  --success: #34d399;
-  --warning: #fbbf24;
-
-  background: var(--background);
-  color: var(--foreground);
-  color-scheme: dark;
-}
-
-.theme-topup .glass {
-  background: rgba(26, 7, 7, 0.82);
-}
-
 @theme inline {
   --color-background: var(--background);
   --color-surface: var(--surface);
