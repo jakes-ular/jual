@@ -104,7 +104,6 @@ export default async function ProductDetailPage({ params }: Props) {
 
   return (
     <>
-      {/* eslint-disable-next-line @next/next/no-sync-scripts */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

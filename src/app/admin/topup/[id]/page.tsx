@@ -49,7 +49,7 @@ export default function AdminTopupGameDetailPage({ params }: { params: Promise<{
   }, [id]);
 
   useEffect(() => {
-    load();
+    Promise.resolve().then(() => load());
   }, [load]);
 
   function openCreate() {

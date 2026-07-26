@@ -12,7 +12,8 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (session?.user?.name) setName(session.user.name);
+    if (!session?.user?.name) return;
+    Promise.resolve().then(() => setName(session.user.name!));
   }, [session]);
 
   async function handleSubmit(e: React.FormEvent) {

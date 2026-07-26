@@ -41,7 +41,7 @@ export function TopupOrderStatus({ orderId }: { orderId: string }) {
   }, [orderId]);
 
   useEffect(() => {
-    fetchOrder();
+    Promise.resolve().then(() => fetchOrder());
   }, [fetchOrder]);
 
   function copyReference() {

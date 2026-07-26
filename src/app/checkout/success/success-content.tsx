@@ -46,7 +46,7 @@ export function CheckoutSuccessContent() {
   }, [orderId]);
 
   useEffect(() => {
-    fetchOrder();
+    Promise.resolve().then(() => fetchOrder());
   }, [fetchOrder]);
 
   function copyReference() {

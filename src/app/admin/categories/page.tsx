@@ -52,7 +52,7 @@ export default function AdminCategoriesPage() {
   }, []);
 
   useEffect(() => {
-    load();
+    Promise.resolve().then(() => load());
   }, [load]);
 
   function openCreate() {

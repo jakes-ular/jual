@@ -13,6 +13,14 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    // Mocking Prisma/next-auth in tests routinely needs `any` casts on mock
+    // return values — not worth typing out generated Prisma client shapes.
+    files: ["**/*.test.ts", "**/*.test.tsx", "e2e/**/*.ts"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;

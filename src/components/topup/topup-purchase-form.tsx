@@ -37,10 +37,11 @@ export function TopupPurchaseForm({ item, game }: Props) {
   }, [status, router, game.slug, item.id]);
 
   useEffect(() => {
-    if (session?.user) {
+    if (!session?.user) return;
+    Promise.resolve().then(() => {
       setBuyerName(session.user.name ?? "");
       setBuyerEmail(session.user.email ?? "");
-    }
+    });
   }, [session]);
 
   async function handleSubmit(e: React.FormEvent) {

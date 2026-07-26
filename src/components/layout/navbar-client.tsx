@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
@@ -24,18 +24,22 @@ interface Category {
   slug: string;
 }
 
+const noSubscribe = () => () => {};
+const getMountedClient = () => true;
+const getMountedServer = () => false;
+
 export function NavbarClient({ categories }: { categories: Category[] }) {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
+  // True only after the client has hydrated — avoids a server/client
+  // markup mismatch for session- and cart-dependent UI.
+  const mounted = useSyncExternalStore(noSubscribe, getMountedClient, getMountedServer);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [catOpen, setCatOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
   const [query, setQuery] = useState("");
 
   const cartCount = useCartStore((s) => s.items.reduce((n, i) => n + i.quantity, 0));
-
-  useEffect(() => setMounted(true), []);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();

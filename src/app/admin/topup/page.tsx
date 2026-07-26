@@ -46,7 +46,7 @@ export default function AdminTopupGamesPage() {
   }, []);
 
   useEffect(() => {
-    load();
+    Promise.resolve().then(() => load());
   }, [load]);
 
   function openCreate() {

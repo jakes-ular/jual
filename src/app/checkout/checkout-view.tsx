@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
@@ -14,13 +14,17 @@ import { formatRupiah } from "@/lib/utils";
 import { useCartStore, cartItemPrice, cartTotal } from "@/store/cart-store";
 import { PAYMENT_METHODS, type PaymentMethod } from "@/lib/payment";
 
+const noSubscribe = () => () => {};
+const getMountedClient = () => true;
+const getMountedServer = () => false;
+
 export function CheckoutView() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const items = useCartStore((s) => s.items);
   const clearCart = useCartStore((s) => s.clear);
 
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(noSubscribe, getMountedClient, getMountedServer);
   const [buyerName, setBuyerName] = useState("");
   const [buyerEmail, setBuyerEmail] = useState("");
   const [buyerContact, setBuyerDiscord] = useState("");
@@ -28,17 +32,16 @@ export function CheckoutView() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => setMounted(true), []);
-
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login?callbackUrl=/checkout");
   }, [status, router]);
 
   useEffect(() => {
-    if (session?.user) {
+    if (!session?.user) return;
+    Promise.resolve().then(() => {
       setBuyerName(session.user.name ?? "");
       setBuyerEmail(session.user.email ?? "");
-    }
+    });
   }, [session]);
 
   const total = cartTotal(items);

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { ShoppingCart, ImageOff } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -16,8 +17,10 @@ const NEW_WINDOW_DAYS = 14;
 export function ProductCard({ product }: { product: ProductCardData }) {
   const addItem = useCartStore((s) => s.addItem);
   const image = product.images[0];
-  const isNew =
-    Date.now() - new Date(product.createdAt).getTime() < NEW_WINDOW_DAYS * 24 * 60 * 60 * 1000;
+  // Snapshot "now" once via a lazy initializer instead of calling Date.now()
+  // directly in the render body, which the React Compiler flags as impure.
+  const [now] = useState(() => Date.now());
+  const isNew = now - new Date(product.createdAt).getTime() < NEW_WINDOW_DAYS * 24 * 60 * 60 * 1000;
   const isSale = !!product.discountPrice && product.discountPrice < product.price;
 
   function handleAddToCart(e: React.MouseEvent) {

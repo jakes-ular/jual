@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     );
   }
 
-  let slug = slugify(parsed.data.name);
+  const slug = slugify(parsed.data.name);
   const existing = await prisma.category.findUnique({ where: { slug } });
   if (existing) {
     return NextResponse.json({ error: "Kategori dengan nama serupa sudah ada" }, { status: 409 });

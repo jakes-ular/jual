@@ -31,10 +31,9 @@ export function ProductActions({ product, image }: Props) {
   const [checkedOwnership, setCheckedOwnership] = useState(false);
 
   useEffect(() => {
-    if (status !== "authenticated") {
-      setCheckedOwnership(true);
-      return;
-    }
+    // Nothing to check while unauthenticated — `owned` stays false, which
+    // already keeps the `owned && checkedOwnership` gate below closed.
+    if (status !== "authenticated") return;
     fetch("/api/me/owned-products")
       .then((r) => r.json())
       .then((data) => setOwned((data.productIds ?? []).includes(product.id)))

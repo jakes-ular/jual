@@ -22,16 +22,22 @@ export function Dialog({
 
   useEffect(() => {
     if (open) {
-      setRendered(true);
-      setClosing(false);
+      Promise.resolve().then(() => {
+        setRendered(true);
+        setClosing(false);
+      });
       return;
     }
     if (!rendered) return;
-    setClosing(true);
-    const timeout = setTimeout(() => {
-      setRendered(false);
-      setClosing(false);
-    }, CLOSE_DURATION);
+
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    Promise.resolve().then(() => {
+      setClosing(true);
+      timeout = setTimeout(() => {
+        setRendered(false);
+        setClosing(false);
+      }, CLOSE_DURATION);
+    });
     return () => clearTimeout(timeout);
   }, [open, rendered]);
 

@@ -8,7 +8,7 @@ import { getPaymentProvider } from "@/lib/payment";
 import { notifyNewOrder } from "@/lib/discord";
 import { formatRupiah } from "@/lib/utils";
 import { z } from "zod";
-import { rateLimit, clientIp } from "@/lib/rate-limit";
+import { rateLimit } from "@/lib/rate-limit";
 
 const bodySchema = checkoutSchema.extend({
   items: z

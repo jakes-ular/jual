@@ -6,7 +6,7 @@ import { topupCheckoutSchema } from "@/lib/validations";
 import { generateOrderNumber, formatRupiah } from "@/lib/utils";
 import { getPaymentProvider } from "@/lib/payment";
 import { notifyNewTopupOrder } from "@/lib/discord";
-import { rateLimit, clientIp } from "@/lib/rate-limit";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);

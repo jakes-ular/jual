@@ -33,7 +33,7 @@ export default function AdminAppealsPage() {
   }, [status]);
 
   useEffect(() => {
-    load();
+    Promise.resolve().then(() => load());
   }, [load]);
 
   async function act(appeal: AdminAppeal, action: "unsuspend" | "dismiss") {

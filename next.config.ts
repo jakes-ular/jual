@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
@@ -14,6 +15,9 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' https: data: blob:",
       "font-src 'self' data:",
+      // Sentry events are proxied through our own /monitoring route (see
+      // tunnelRoute below), so no external ingest host needs to be allowed
+      // here — same-origin 'self' already covers it.
       "connect-src 'self'",
       "frame-ancestors 'none'",
       "base-uri 'self'",
@@ -44,4 +48,13 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  // Proxies Sentry's browser SDK requests through our own domain so ad
+  // blockers don't drop them, and so the CSP doesn't need an external host.
+  tunnelRoute: "/monitoring",
+});

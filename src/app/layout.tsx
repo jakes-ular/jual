@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ViewTransition } from "react";
 import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 
@@ -70,6 +71,7 @@ export default function RootLayout({
             {children}
           </ViewTransition>
         </Providers>
+        <Analytics />
       </body>
     </html>
   );

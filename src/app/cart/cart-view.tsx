@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -12,17 +12,19 @@ import { EmptyState } from "@/components/ui/states";
 import { formatRupiah } from "@/lib/utils";
 import { useCartStore, cartItemPrice, cartTotal } from "@/store/cart-store";
 
+const noSubscribe = () => () => {};
+const getMountedClient = () => true;
+const getMountedServer = () => false;
+
 export function CartView() {
   const { status } = useSession();
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(noSubscribe, getMountedClient, getMountedServer);
   const [ownedIds, setOwnedIds] = useState<string[]>([]);
 
   const items = useCartStore((s) => s.items);
   const removeItem = useCartStore((s) => s.removeItem);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
-
-  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (status !== "authenticated") return;

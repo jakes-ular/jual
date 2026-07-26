@@ -16,7 +16,7 @@ import { put, del } from "@vercel/blob";
  */
 
 const UPLOAD_ROOT = path.join(process.cwd(), "public", "uploads");
-const useBlob = () => !!process.env.BLOB_READ_WRITE_TOKEN;
+const blobConfigured = () => !!process.env.BLOB_READ_WRITE_TOKEN;
 
 export interface StoredFile {
   url: string; // public URL (images) or internal reference (protected files)
@@ -36,7 +36,7 @@ export async function saveImageBuffer(
 ): Promise<StoredFile> {
   const ext = path.extname(fileName) || ".jpg";
 
-  if (useBlob()) {
+  if (blobConfigured()) {
     const blob = await put(`products/${randomUUID()}${ext}`, buffer, { access: "public", contentType });
     return { url: blob.url, storagePath: blob.url, sizeBytes: buffer.byteLength };
   }
@@ -57,7 +57,7 @@ export async function saveImageBuffer(
 export async function saveFileBuffer(buffer: Buffer, fileName: string): Promise<StoredFile> {
   const ext = path.extname(fileName) || "";
 
-  if (useBlob()) {
+  if (blobConfigured()) {
     const blob = await put(`files/${randomUUID()}${ext}`, buffer, {
       access: "public",
       contentType: "application/octet-stream",
