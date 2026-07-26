@@ -17,6 +17,7 @@ interface AdminUser {
   role: string;
   status: string;
   suspensionReason: string | null;
+  emailVerified: string | null;
   createdAt: string;
   _count: { orders: number };
 }
@@ -108,6 +109,7 @@ export default function AdminUsersPage() {
                 <th className="px-4 py-3 font-medium">User</th>
                 <th className="px-4 py-3 font-medium">Role</th>
                 <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium">Email</th>
                 <th className="px-4 py-3 font-medium">Order</th>
                 <th className="px-4 py-3 font-medium">Bergabung</th>
                 <th className="px-4 py-3 font-medium text-right">Aksi</th>
@@ -134,6 +136,11 @@ export default function AdminUsersPage() {
                     <button onClick={() => toggleStatus(u)} title={u.suspensionReason ?? undefined}>
                       <Badge variant={u.status === "ACTIVE" ? "success" : "danger"}>{u.status}</Badge>
                     </button>
+                  </td>
+                  <td className="px-4 py-3">
+                    <Badge variant={u.emailVerified ? "success" : "warning"}>
+                      {u.emailVerified ? "Terverifikasi" : "Belum Verifikasi"}
+                    </Badge>
                   </td>
                   <td className="px-4 py-3 text-muted">{u._count.orders}</td>
                   <td className="px-4 py-3 text-muted-2">{formatDate(u.createdAt)}</td>
