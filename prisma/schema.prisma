@@ -74,6 +74,7 @@ model Category {
 
 model Product {
   id              String    @id @default(cuid())
+  type            String    @default("ASSET") // ASSET | TOPUP
   name            String
   slug            String    @unique
   shortDescription String?
@@ -167,6 +168,8 @@ model OrderItem {
   productName String   // snapshot at time of purchase
   unitPrice   Int      // snapshot at time of purchase
   quantity    Int      @default(1)
+  topupTargetId String? // buyer's game account/user ID, for TOPUP products
+  topupServerId String? // buyer's zone/server ID, for TOPUP products that need one
 
   @@index([orderId])
   @@index([productId])

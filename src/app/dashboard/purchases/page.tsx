@@ -20,6 +20,7 @@ export default async function PurchasesPage() {
         select: {
           slug: true,
           name: true,
+          type: true,
           images: { take: 1, orderBy: { position: "asc" } },
           files: { select: { id: true, fileName: true } },
         },
@@ -70,11 +71,21 @@ export default async function PurchasesPage() {
                 Dibeli {formatDate(item.order.paidAt ?? item.order.createdAt)}
               </span>
             </div>
-            <div className="flex flex-wrap gap-2 mt-3">
-              {item.product.files.map((f) => (
-                <DownloadButton key={f.id} fileId={f.id} label={f.fileName} />
-              ))}
-            </div>
+            {item.product.type === "TOPUP" ? (
+              <div className="mt-3 text-xs">
+                <p className="text-muted">
+                  ID Game: <span className="text-foreground font-medium">{item.topupTargetId}</span>
+                  {item.topupServerId && ` · Server: ${item.topupServerId}`}
+                </p>
+                <p className="text-muted-2 mt-1">Diproses manual oleh admin, cek status di halaman Order.</p>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {item.product.files.map((f) => (
+                  <DownloadButton key={f.id} fileId={f.id} label={f.fileName} />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       ))}

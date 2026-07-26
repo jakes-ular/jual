@@ -93,6 +93,13 @@ export function CartView() {
                       </Link>
                       <p className="text-xs text-muted mt-0.5">{item.category}</p>
 
+                      {item.type === "TOPUP" && item.topupTargetId && (
+                        <p className="text-xs text-muted mt-1">
+                          ID Game: <span className="text-foreground font-medium">{item.topupTargetId}</span>
+                          {item.topupServerId && ` · Server: ${item.topupServerId}`}
+                        </p>
+                      )}
+
                       {owned && (
                         <p className="flex items-center gap-1 text-xs text-warning mt-1.5">
                           <AlertTriangle className="h-3 w-3" /> Anda sudah memiliki produk ini
@@ -100,21 +107,25 @@ export function CartView() {
                       )}
 
                       <div className="flex items-center justify-between mt-3">
-                        <div className="flex items-center rounded-lg border border-border h-8">
-                          <button
-                            onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                            className="w-8 h-full flex items-center justify-center text-muted hover:text-foreground"
-                          >
-                            <Minus className="h-3 w-3" />
-                          </button>
-                          <span className="w-6 text-center text-xs font-medium">{item.quantity}</span>
-                          <button
-                            onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                            className="w-8 h-full flex items-center justify-center text-muted hover:text-foreground"
-                          >
-                            <Plus className="h-3 w-3" />
-                          </button>
-                        </div>
+                        {item.type === "TOPUP" ? (
+                          <span className="text-xs text-muted-2">Qty 1</span>
+                        ) : (
+                          <div className="flex items-center rounded-lg border border-border h-8">
+                            <button
+                              onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                              className="w-8 h-full flex items-center justify-center text-muted hover:text-foreground"
+                            >
+                              <Minus className="h-3 w-3" />
+                            </button>
+                            <span className="w-6 text-center text-xs font-medium">{item.quantity}</span>
+                            <button
+                              onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                              className="w-8 h-full flex items-center justify-center text-muted hover:text-foreground"
+                            >
+                              <Plus className="h-3 w-3" />
+                            </button>
+                          </div>
+                        )}
                         <span className="font-display font-bold text-sm">
                           {formatRupiah(cartItemPrice(item) * item.quantity)}
                         </span>

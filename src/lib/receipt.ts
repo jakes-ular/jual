@@ -11,7 +11,13 @@ interface ReceiptOrder {
   status: string;
   createdAt: Date;
   paidAt: Date | null;
-  items: { productName: string; unitPrice: number; quantity: number }[];
+  items: {
+    productName: string;
+    unitPrice: number;
+    quantity: number;
+    topupTargetId?: string | null;
+    topupServerId?: string | null;
+  }[];
   payment: { method: string; status: string; referenceCode: string } | null;
 }
 
@@ -105,7 +111,14 @@ export async function generateReceiptPdf(order: ReceiptOrder): Promise<Uint8Arra
     text(String(item.quantity), colQty, y, { size: 10 });
     text(formatRupiah(item.unitPrice), colPrice, y, { size: 10 });
     text(formatRupiah(item.unitPrice * item.quantity), colSubtotal, y, { size: 10 });
-    y -= 20;
+    y -= 15;
+    if (item.topupTargetId) {
+      const serverPart = item.topupServerId ? ` · Server: ${item.topupServerId}` : "";
+      text(`ID Game: ${item.topupTargetId}${serverPart}`, colProduct, y, { size: 8, color: muted });
+      y -= 15;
+    } else {
+      y -= 5;
+    }
   }
 
   y -= 10;

@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { CheckCircle2, Clock, Copy, Download, RefreshCw, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +18,13 @@ interface OrderData {
   total: number;
   status: string;
   createdAt: string;
-  items: { productName: string; unitPrice: number; quantity: number }[];
+  items: {
+    productName: string;
+    unitPrice: number;
+    quantity: number;
+    topupTargetId: string | null;
+    topupServerId: string | null;
+  }[];
   payment: {
     method: string;
     status: string;
@@ -30,6 +37,7 @@ export function CheckoutSuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
   const [order, setOrder] = useState<OrderData | null>(null);
+  const [qrisImageUrl, setQrisImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchOrder = useCallback(async () => {
@@ -38,6 +46,7 @@ export function CheckoutSuccessContent() {
     if (res.ok) {
       const data = await res.json();
       setOrder(data.order);
+      setQrisImageUrl(data.qrisImageUrl ?? null);
     }
     setLoading(false);
   }, [orderId]);
@@ -95,6 +104,18 @@ export function CheckoutSuccessContent() {
                 </Badge>
               </div>
 
+              {order.status === "PENDING" && order.payment && order.payment.method === "QRIS" && qrisImageUrl && (
+                <div className="rounded-xl bg-surface-2 border border-border p-4 mb-4 flex flex-col items-center">
+                  <p className="text-xs text-muted mb-3">Scan QRIS untuk membayar</p>
+                  <div className="relative h-56 w-56 rounded-lg overflow-hidden bg-white">
+                    <Image src={qrisImageUrl} alt="Kode QRIS" fill sizes="224px" className="object-contain" />
+                  </div>
+                  <p className="text-xs text-muted-2 mt-3 text-center">
+                    Pastikan nominal yang dibayar {formatRupiah(order.total)}
+                  </p>
+                </div>
+              )}
+
               {order.status === "PENDING" && order.payment && (
                 <div className="rounded-xl bg-surface-2 border border-border p-4 mb-4">
                   <p className="text-xs text-muted mb-1">Kode Referensi Pembayaran</p>
@@ -120,11 +141,19 @@ export function CheckoutSuccessContent() {
 
               <div className="space-y-2 text-sm">
                 {order.items.map((item, i) => (
-                  <div key={i} className="flex justify-between text-muted">
-                    <span>
-                      {item.productName} x{item.quantity}
-                    </span>
-                    <span>{formatRupiah(item.unitPrice * item.quantity)}</span>
+                  <div key={i}>
+                    <div className="flex justify-between text-muted">
+                      <span>
+                        {item.productName} x{item.quantity}
+                      </span>
+                      <span>{formatRupiah(item.unitPrice * item.quantity)}</span>
+                    </div>
+                    {item.topupTargetId && (
+                      <p className="text-xs text-muted-2 mt-0.5">
+                        ID Game: {item.topupTargetId}
+                        {item.topupServerId && ` · Server: ${item.topupServerId}`}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>

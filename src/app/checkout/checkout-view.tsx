@@ -62,7 +62,12 @@ export function CheckoutView() {
           buyerEmail,
           buyerContact,
           method,
-          items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
+          items: items.map((i) => ({
+            productId: i.productId,
+            quantity: i.quantity,
+            topupTargetId: i.topupTargetId,
+            topupServerId: i.topupServerId,
+          })),
         }),
       });
       const data = await res.json();
@@ -184,7 +189,14 @@ export function CheckoutView() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium line-clamp-1">{item.name}</p>
-                      <p className="text-xs text-muted">Qty {item.quantity}</p>
+                      {item.type === "TOPUP" && item.topupTargetId ? (
+                        <p className="text-xs text-muted">
+                          ID Game: {item.topupTargetId}
+                          {item.topupServerId && ` · Server: ${item.topupServerId}`}
+                        </p>
+                      ) : (
+                        <p className="text-xs text-muted">Qty {item.quantity}</p>
+                      )}
                     </div>
                     <span className="text-sm font-medium">
                       {formatRupiah(cartItemPrice(item) * item.quantity)}

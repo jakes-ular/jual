@@ -21,6 +21,7 @@ export const resendVerificationSchema = z.object({
 });
 
 export const productSchema = z.object({
+  type: z.enum(["ASSET", "TOPUP"]).default("ASSET"),
   name: z.string().min(3, "Nama produk minimal 3 karakter").max(150),
   shortDescription: z.string().max(200).optional(),
   description: z.string().min(10, "Deskripsi minimal 10 karakter"),

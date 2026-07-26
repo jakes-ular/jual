@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { toast } from "sonner";
+import { Loader2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea, Label } from "@/components/ui/input";
 
@@ -48,6 +50,27 @@ export default function AdminSettingsPage() {
   const [values, setValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingQris, setUploadingQris] = useState(false);
+
+  async function handleQrisUpload(fileList: FileList | null) {
+    const file = fileList?.[0];
+    if (!file) return;
+    setUploadingQris(true);
+    try {
+      const formData = new FormData();
+      formData.append("kind", "image");
+      formData.append("file", file);
+      const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Gagal mengunggah gambar");
+      setValues((v) => ({ ...v, qrisImageUrl: data.url }));
+      toast.success("Foto QRIS diunggah — klik Simpan untuk menerapkan");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal mengunggah gambar");
+    } finally {
+      setUploadingQris(false);
+    }
+  }
 
   useEffect(() => {
     fetch("/api/admin/settings")
@@ -100,6 +123,22 @@ export default function AdminSettingsPage() {
               )}
             </div>
           ))}
+          {group.section === "Informasi Pembayaran Manual" && (
+            <div>
+              <Label htmlFor="qrisImageUrl">Foto QRIS</Label>
+              {values.qrisImageUrl && (
+                <div className="relative h-40 w-40 rounded-xl overflow-hidden border border-border mb-2">
+                  <Image src={values.qrisImageUrl} alt="QRIS" fill sizes="160px" className="object-contain bg-white" />
+                </div>
+              )}
+              <label className="flex items-center justify-center gap-2 h-11 rounded-xl border-2 border-dashed border-border cursor-pointer hover:border-border-strong text-sm text-muted-2 w-fit px-4">
+                {uploadingQris ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                {values.qrisImageUrl ? "Ganti foto QRIS" : "Unggah foto QRIS"}
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => handleQrisUpload(e.target.files)} />
+              </label>
+              <p className="text-xs text-muted-2 mt-1.5">Ditampilkan ke pembeli di halaman konfirmasi pesanan saat memilih QRIS.</p>
+            </div>
+          )}
         </div>
       ))}
       <Button type="submit" size="lg" loading={saving}>

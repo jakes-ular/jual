@@ -12,6 +12,9 @@ export interface CartItem {
   image: string | null;
   category: string;
   quantity: number;
+  type?: "ASSET" | "TOPUP";
+  topupTargetId?: string;
+  topupServerId?: string;
 }
 
 interface CartState {
@@ -31,6 +34,15 @@ export const useCartStore = create<CartState>()(
         set((state) => {
           const existing = state.items.find((i) => i.productId === item.productId);
           if (existing) {
+            // Topup items always represent one delivery to one game account —
+            // re-adding replaces the target ID instead of stacking quantity.
+            if (item.type === "TOPUP") {
+              return {
+                items: state.items.map((i) =>
+                  i.productId === item.productId ? { ...i, ...item, quantity: 1 } : i
+                ),
+              };
+            }
             return {
               items: state.items.map((i) =>
                 i.productId === item.productId
@@ -39,7 +51,7 @@ export const useCartStore = create<CartState>()(
               ),
             };
           }
-          return { items: [...state.items, { ...item, quantity }] };
+          return { items: [...state.items, { ...item, quantity: item.type === "TOPUP" ? 1 : quantity }] };
         });
       },
       removeItem: (productId) =>

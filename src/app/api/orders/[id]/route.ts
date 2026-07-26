@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getSetting } from "@/lib/settings";
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -23,5 +24,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  return NextResponse.json({ order });
+  const qrisImageUrl =
+    order.payment?.method === "QRIS" ? await getSetting("qrisImageUrl", "/Qrispayment.png") : null;
+
+  return NextResponse.json({ order, qrisImageUrl });
 }
