@@ -1,24 +1,30 @@
 /**
- * Transactional email via Resend. Silently logs (instead of throwing) when
- * RESEND_API_KEY isn't configured, so local dev without the integration
- * doesn't hard-fail registration — the code still shows up in server logs.
+ * Transactional email via Gmail SMTP (nodemailer). Chosen over Resend
+ * because Resend requires a verified custom domain to send to arbitrary
+ * recipients, which this deployment doesn't have — Gmail sends from an
+ * already-verified address (your own Gmail account) via an App Password.
+ * Logs instead of throwing when unconfigured, so local dev without SMTP
+ * set up doesn't hard-fail registration — the code still shows in logs.
  */
 
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
 const siteName = process.env.NEXT_PUBLIC_SITE_NAME ?? "VoxMarket";
-const domain = process.env.RESEND_EMAIL_DOMAIN;
-const from = `${siteName} <noreply@${domain}>`;
+const gmailUser = process.env.GMAIL_USER;
+const gmailAppPassword = process.env.GMAIL_APP_PASSWORD;
 
-function getClient(): Resend | null {
-  if (!process.env.RESEND_API_KEY || !domain) return null;
-  return new Resend(process.env.RESEND_API_KEY);
+function getTransport() {
+  if (!gmailUser || !gmailAppPassword) return null;
+  return nodemailer.createTransport({
+    service: "gmail",
+    auth: { user: gmailUser, pass: gmailAppPassword },
+  });
 }
 
 export async function sendVerificationCodeEmail(to: string, name: string, code: string) {
-  const resend = getClient();
-  if (!resend) {
-    console.warn(`[email] RESEND_API_KEY/RESEND_EMAIL_DOMAIN not set — verification code for ${to}: ${code}`);
+  const transport = getTransport();
+  if (!transport) {
+    console.warn(`[email] GMAIL_USER/GMAIL_APP_PASSWORD not set — verification code for ${to}: ${code}`);
     return;
   }
 
@@ -32,18 +38,15 @@ export async function sendVerificationCodeEmail(to: string, name: string, code: 
     </div>
   `;
 
-  const { error } = await resend.emails.send(
-    {
-      from,
-      to: [to],
+  try {
+    await transport.sendMail({
+      from: `${siteName} <${gmailUser}>`,
+      to,
       subject: `${code} adalah kode verifikasi ${siteName} Anda`,
       html,
-    },
-    { idempotencyKey: `verify-email/${to}/${code}` }
-  );
-
-  if (error) {
-    console.error("Failed to send verification email:", error);
+    });
+  } catch (err) {
+    console.error("Failed to send verification email:", err);
     throw new Error("Gagal mengirim email verifikasi");
   }
 }
