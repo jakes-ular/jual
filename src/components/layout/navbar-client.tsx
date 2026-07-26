@@ -46,6 +46,7 @@ export function NavbarClient({ categories }: { categories: Category[] }) {
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/catalog", label: "Catalog" },
+    { href: "/topup", label: "Topup Game" },
     { href: "/about", label: "About" },
     { href: "/contact", label: "Contact" },
   ];

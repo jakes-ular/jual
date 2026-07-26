@@ -60,7 +60,7 @@ export default async function ProductDetailPage({ params }: Props) {
 
   if (!product || product.status !== "PUBLISHED") notFound();
 
-  const related = await getRelatedProducts(product.categoryId, product.id, 4);
+  const related = await getRelatedProducts(product.categoryId, product.id, 4, product.type as "ASSET" | "TOPUP");
 
   let canReview = false;
   if (session?.user) {

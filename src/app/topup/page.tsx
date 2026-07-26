@@ -11,20 +11,19 @@ import { NoResults } from "@/components/ui/states";
 import { Pagination } from "@/components/ui/pagination";
 
 export const metadata: Metadata = {
-  title: "Catalog",
-  description:
-    "Jelajahi katalog lengkap aset Roblox: GFX, model 3D, map, UI, script, kendaraan, pakaian, VFX, SFX, dan sistem siap pakai.",
+  title: "Topup Game",
+  description: "Topup diamond, UC, dan mata uang game favorit Anda — proses cepat dan aman.",
 };
 
-interface CatalogPageProps {
+interface TopupPageProps {
   searchParams: Promise<Record<string, string | undefined>>;
 }
 
-export default async function CatalogPage({ searchParams }: CatalogPageProps) {
+export default async function TopupPage({ searchParams }: TopupPageProps) {
   const params = await searchParams;
 
   const categories = await prisma.category.findMany({
-    where: { products: { some: { type: "ASSET", status: "PUBLISHED" } } },
+    where: { products: { some: { type: "TOPUP", status: "PUBLISHED" } } },
     select: { name: true, slug: true },
     orderBy: { name: "asc" },
   });
@@ -35,16 +34,16 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
       <main className="flex-1">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
           <div className="mb-8">
-            <h1 className="font-display font-bold text-3xl">Catalog</h1>
+            <h1 className="font-display font-bold text-3xl">Topup Game</h1>
             <p className="text-sm text-muted mt-2">
-              Temukan aset Roblox premium yang Anda butuhkan dari ratusan pilihan berkualitas.
+              Topup diamond, UC, dan mata uang game favorit Anda — pilih game, masukkan ID, dan bayar.
             </p>
           </div>
 
           <CatalogFilters categories={categories} />
 
           <Suspense fallback={<ProductGridSkeleton />} key={JSON.stringify(params)}>
-            <CatalogResults params={params} />
+            <TopupResults params={params} />
           </Suspense>
         </div>
       </main>
@@ -53,9 +52,8 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   );
 }
 
-async function CatalogResults({ params }: { params: Record<string, string | undefined> }) {
+async function TopupResults({ params }: { params: Record<string, string | undefined> }) {
   const page = Number(params.page ?? "1") || 1;
-  const featuredOnly = params.featured === "1";
 
   const result = await queryProducts({
     q: params.q,
@@ -64,8 +62,7 @@ async function CatalogResults({ params }: { params: Record<string, string | unde
     maxPrice: params.maxPrice ? Number(params.maxPrice) : undefined,
     sort: (params.sort as SortOption) ?? "newest",
     page,
-    featuredOnly,
-    type: "ASSET",
+    type: "TOPUP",
   });
 
   if (result.items.length === 0) {
@@ -82,7 +79,7 @@ async function CatalogResults({ params }: { params: Record<string, string | unde
           <ProductCard key={p.id} product={p} />
         ))}
       </div>
-      <Pagination page={result.page} totalPages={result.totalPages} baseUrl="/catalog" params={params} />
+      <Pagination page={result.page} totalPages={result.totalPages} baseUrl="/topup" params={params} />
     </>
   );
 }
