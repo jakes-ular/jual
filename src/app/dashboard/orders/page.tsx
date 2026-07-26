@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { formatRupiah, formatDateTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/states";
-import { ClipboardList } from "lucide-react";
+import { ClipboardList, Download } from "lucide-react";
 
 export default async function OrderHistoryPage() {
   const session = await getServerSession(authOptions);
@@ -55,6 +55,13 @@ export default async function OrderHistoryPage() {
             </span>
             <div className="flex items-center gap-3">
               <span className="font-display font-bold text-sm">{formatRupiah(o.total)}</span>
+              <a
+                href={`/api/orders/${o.id}/receipt`}
+                download
+                className="text-xs text-primary-2 font-medium inline-flex items-center gap-1"
+              >
+                <Download className="h-3.5 w-3.5" /> Resi
+              </a>
               {o.status === "PENDING" && (
                 <Link href={`/checkout/success?orderId=${o.id}`} className="text-xs text-primary-2 font-medium">
                   Lihat Instruksi

@@ -461,6 +461,7 @@ async function main() {
       email: adminEmail,
       passwordHash: adminHash,
       role: "ADMIN",
+      emailVerified: new Date(),
     },
   });
   console.log(`Admin user ready: ${adminEmail}`);

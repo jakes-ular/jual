@@ -16,16 +16,23 @@ function LoginFormFields() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [needsVerification, setNeedsVerification] = useState(false);
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setNeedsVerification(false);
     setLoading(true);
     try {
       const res = await signIn("credentials", { email, password, redirect: false });
       if (res?.error) {
-        setError(res.error);
+        if (res.error === "EMAIL_NOT_VERIFIED") {
+          setNeedsVerification(true);
+          setError("Email Anda belum diverifikasi.");
+        } else {
+          setError(res.error);
+        }
         return;
       }
       toast.success("Berhasil masuk");
@@ -62,6 +69,16 @@ function LoginFormFields() {
           />
         </div>
         {error && <FieldError>{error}</FieldError>}
+        {needsVerification && (
+          <p className="text-sm">
+            <Link
+              href={`/verify-email?email=${encodeURIComponent(email)}`}
+              className="text-primary-2 font-medium"
+            >
+              Verifikasi email sekarang
+            </Link>
+          </p>
+        )}
         <Button type="submit" className="w-full" size="lg" loading={loading}>
           Masuk
         </Button>

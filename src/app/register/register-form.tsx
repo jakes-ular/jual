@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input, Label, FieldError } from "@/components/ui/input";
@@ -29,12 +28,12 @@ export function RegisterForm() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Gagal mendaftar");
 
-      const signInRes = await signIn("credentials", { email, password, redirect: false });
-      if (signInRes?.error) throw new Error(signInRes.error);
-
-      toast.success("Akun berhasil dibuat");
-      router.push("/dashboard");
-      router.refresh();
+      if (data.emailSent) {
+        toast.success("Kode verifikasi telah dikirim ke email Anda");
+      } else {
+        toast.error("Akun dibuat, tapi gagal mengirim email. Coba kirim ulang kode.");
+      }
+      router.push(`/verify-email?email=${encodeURIComponent(email)}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Terjadi kesalahan");
     } finally {

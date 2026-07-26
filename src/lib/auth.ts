@@ -36,6 +36,10 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Email atau password salah");
         }
 
+        if (!user.emailVerified) {
+          throw new Error("EMAIL_NOT_VERIFIED");
+        }
+
         return {
           id: user.id,
           name: user.name,

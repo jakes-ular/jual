@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { registerSchema } from "@/lib/validations";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
+import { issueVerificationCode } from "@/lib/verification";
 
 export async function POST(req: Request) {
   if (!rateLimit(`register:${clientIp(req)}`, 5, 5 * 60 * 1000)) {
@@ -34,5 +35,13 @@ export async function POST(req: Request) {
     select: { id: true, name: true, email: true },
   });
 
-  return NextResponse.json({ user }, { status: 201 });
+  let emailSent = true;
+  try {
+    await issueVerificationCode(user.id, user.email, user.name);
+  } catch (err) {
+    console.error("Failed to send verification email during registration:", err);
+    emailSent = false;
+  }
+
+  return NextResponse.json({ user, emailSent }, { status: 201 });
 }

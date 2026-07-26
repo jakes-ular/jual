@@ -34,6 +34,7 @@ model User {
   status        String    @default("ACTIVE")
   suspensionReason String?
   avatarUrl     String?
+  emailVerified DateTime? // null until the signup verification code is confirmed
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -42,8 +43,21 @@ model User {
   wishlists     Wishlist[]
   downloads     Download[]
   appeals       Appeal[]
+  verificationTokens EmailVerificationToken[]
 
   @@index([email])
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash  String   // bcrypt hash of the 6-digit code, never stored in plaintext
+  attempts  Int      @default(0)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model Category {

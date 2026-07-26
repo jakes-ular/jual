@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle2, Clock, Copy, RefreshCw, XCircle } from "lucide-react";
+import { CheckCircle2, Clock, Copy, Download, RefreshCw, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatRupiah, formatDateTime } from "@/lib/utils";
@@ -140,6 +140,11 @@ export function CheckoutSuccessContent() {
                   <RefreshCw className="h-4 w-4" /> Cek Status Pembayaran
                 </Button>
               )}
+              <a href={`/api/orders/${order.id}/receipt`} download>
+                <Button variant="outline">
+                  <Download className="h-4 w-4" /> Download Resi
+                </Button>
+              </a>
               {order.status === "PAID" ? (
                 <Link href="/dashboard/purchases">
                   <Button>Lihat Pembelian Saya</Button>

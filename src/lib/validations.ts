@@ -11,6 +11,15 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Password wajib diisi"),
 });
 
+export const verifyEmailSchema = z.object({
+  email: z.string().email("Email tidak valid"),
+  code: z.string().length(6, "Kode harus 6 digit"),
+});
+
+export const resendVerificationSchema = z.object({
+  email: z.string().email("Email tidak valid"),
+});
+
 export const productSchema = z.object({
   name: z.string().min(3, "Nama produk minimal 3 karakter").max(150),
   shortDescription: z.string().max(200).optional(),
