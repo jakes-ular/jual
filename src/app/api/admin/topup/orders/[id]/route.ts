@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin-guard";
 import { prisma } from "@/lib/prisma";
@@ -37,11 +37,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   });
 
   if (becomesPaid && !wasPaid) {
-    await notifyPaymentConfirmed({
-      orderNumber: order.orderNumber,
-      buyerName: order.buyerName,
-      total: formatRupiah(order.price),
-    });
+    after(() =>
+      notifyPaymentConfirmed({
+        orderNumber: order.orderNumber,
+        buyerName: order.buyerName,
+        total: formatRupiah(order.price),
+      })
+    );
   }
 
   return NextResponse.json({ order: updated });

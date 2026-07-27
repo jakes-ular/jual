@@ -17,6 +17,10 @@ test("browse catalog, add to cart, and complete checkout", async ({ page }) => {
   await page.getByRole("button", { name: "Buat Pesanan" }).click();
 
   await page.waitForURL(/\/checkout\/success/);
-  await expect(page.getByText(/No\. Order/)).toBeVisible();
+  // Generous timeout: this hits a real (Neon) Postgres connection, whose
+  // first query after idling can cold-start for several seconds -- slower
+  // than the default 5s, especially from a residential network. CI's local
+  // Postgres service doesn't have this problem, so it isn't hidden there.
+  await expect(page.getByText(/No\. Order/)).toBeVisible({ timeout: 15_000 });
   await expect(page.getByRole("heading", { name: "Menunggu Pembayaran" })).toBeVisible();
 });

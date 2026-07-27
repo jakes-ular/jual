@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
 import { authOptions } from "@/lib/auth";
@@ -50,12 +50,14 @@ export async function POST(req: Request) {
     data: { userId: session.user.id, message: parsed.data.message },
   });
 
-  await notifyAppeal({
-    buyerName: user?.name ?? "-",
-    buyerEmail: user?.email ?? "-",
-    suspensionReason: user?.suspensionReason ?? null,
-    message: parsed.data.message,
-  });
+  after(() =>
+    notifyAppeal({
+      buyerName: user?.name ?? "-",
+      buyerEmail: user?.email ?? "-",
+      suspensionReason: user?.suspensionReason ?? null,
+      message: parsed.data.message,
+    })
+  );
 
   return NextResponse.json({ appeal });
 }

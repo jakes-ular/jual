@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -107,16 +107,18 @@ export async function POST(req: Request) {
     include: { items: true, payment: true },
   });
 
-  await notifyNewOrder({
-    orderNumber: order.orderNumber,
-    buyerName,
-    buyerEmail,
-    buyerContact,
-    total: formatRupiah(total),
-    method,
-    referenceCode: instructions.referenceCode,
-    itemNames: orderItemsData.map((i) => i.productName),
-  });
+  after(() =>
+    notifyNewOrder({
+      orderNumber: order.orderNumber,
+      buyerName,
+      buyerEmail,
+      buyerContact,
+      total: formatRupiah(total),
+      method,
+      referenceCode: instructions.referenceCode,
+      itemNames: orderItemsData.map((i) => i.productName),
+    })
+  );
 
   return NextResponse.json({
     orderId: order.id,

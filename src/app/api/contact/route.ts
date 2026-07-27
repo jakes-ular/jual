@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { z } from "zod";
 import { notifyContactMessage } from "@/lib/discord";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     );
   }
 
-  await notifyContactMessage(parsed.data);
+  after(() => notifyContactMessage(parsed.data));
 
   return NextResponse.json({ success: true });
 }
