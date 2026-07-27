@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
-import { Search, ChevronDown, ChevronUp } from "lucide-react";
+import { Search, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { Input, Select } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,7 @@ export default function AdminTopupOrdersPage() {
   const [status, setStatus] = useState("");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -79,6 +80,23 @@ export default function AdminTopupOrdersPage() {
       toast.error(err instanceof Error ? err.message : "Terjadi kesalahan");
     } finally {
       setUpdating(null);
+    }
+  }
+
+  async function handleDelete(order: TopupOrder) {
+    if (!confirm(`Hapus order ${order.orderNumber} secara permanen? Aksi ini tidak bisa dibatalkan.`)) return;
+
+    setDeleting(order.id);
+    try {
+      const res = await fetch(`/api/admin/topup/orders/${order.id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Gagal menghapus order");
+      toast.success(`Order ${order.orderNumber} dihapus`);
+      load();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Terjadi kesalahan");
+    } finally {
+      setDeleting(null);
     }
   }
 
@@ -175,6 +193,18 @@ export default function AdminTopupOrdersPage() {
                         {s}
                       </Button>
                     ))}
+                    {(o.status === "CANCELLED" || o.status === "EXPIRED") && (
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        className="ml-auto"
+                        disabled={deleting === o.id}
+                        loading={deleting === o.id}
+                        onClick={() => handleDelete(o)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" /> Hapus
+                      </Button>
+                    )}
                   </div>
                 </div>
               )}

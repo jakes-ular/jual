@@ -48,3 +48,22 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   return NextResponse.json({ order: updated });
 }
+
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await requireAdmin();
+  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
+
+  const { id } = await params;
+  const order = await prisma.topupOrder.findUnique({ where: { id } });
+  if (!order) return NextResponse.json({ error: "Order tidak ditemukan" }, { status: 404 });
+
+  if (order.status !== "CANCELLED" && order.status !== "EXPIRED") {
+    return NextResponse.json(
+      { error: "Hanya order berstatus CANCELLED atau EXPIRED yang bisa dihapus" },
+      { status: 400 }
+    );
+  }
+
+  await prisma.topupOrder.delete({ where: { id } });
+  return NextResponse.json({ success: true });
+}
