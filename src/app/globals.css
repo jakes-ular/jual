@@ -70,6 +70,19 @@ body {
   background: var(--muted-2);
 }
 
+/*
+ * Defined via @utility (not @layer utilities) specifically so variants
+ * work: a plain @layer utilities class doesn't get hover:/group-hover:
+ * variants generated for it under Tailwind v4, which silently dropped
+ * group-hover:bg-gradient-brand wherever it was used (e.g. topup item
+ * cards) -- the icon still turned white on hover from group-hover:text-white
+ * (a real utility), just against a background that never changed, making
+ * it unreadable.
+ */
+@utility bg-gradient-brand {
+  background-image: linear-gradient(100deg, var(--primary) 0%, var(--primary-2) 130%);
+}
+
 @layer utilities {
   .font-display {
     font-family: var(--font-display), var(--font-sans), sans-serif;
@@ -80,10 +93,6 @@ body {
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-  }
-
-  .bg-gradient-brand {
-    background-image: linear-gradient(100deg, var(--primary) 0%, var(--primary-2) 130%);
   }
 
   .glass {

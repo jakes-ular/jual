@@ -26,7 +26,7 @@ export function PopularCategories({ categories }: { categories: CategoryWithCoun
               href={`/catalog?category=${c.slug}`}
               className="group h-full rounded-2xl border border-border bg-surface p-5 hover-lift flex flex-col items-start gap-3"
             >
-              <div className="h-11 w-11 rounded-xl bg-gradient-brand/15 border border-primary/20 flex items-center justify-center text-primary-2 group-hover:bg-gradient-brand group-hover:text-white transition-colors">
+              <div className="h-11 w-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary-2 group-hover:bg-gradient-brand group-hover:text-white transition-colors">
                 <CategoryIcon name={c.icon} className="h-5 w-5 icon-pop" />
               </div>
               <div>

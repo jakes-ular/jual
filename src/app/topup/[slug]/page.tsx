@@ -66,7 +66,7 @@ export default async function TopupGamePage({ params }: Props) {
                   href={`/topup/${game.slug}/${item.id}`}
                   className="group rounded-2xl border border-border bg-surface p-5 hover-lift flex flex-col items-center text-center gap-2"
                 >
-                  <div className="h-11 w-11 rounded-xl bg-gradient-brand/15 border border-primary/20 flex items-center justify-center text-primary-2 group-hover:bg-gradient-brand group-hover:text-white transition-colors">
+                  <div className="h-11 w-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary-2 group-hover:bg-gradient-brand group-hover:text-white transition-colors">
                     <Coins className="h-5 w-5" />
                   </div>
                   <h3 className="text-sm font-semibold mt-1">{item.name}</h3>
