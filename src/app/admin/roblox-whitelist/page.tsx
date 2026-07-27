@@ -295,7 +295,7 @@ end)
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
         <div>
           <h2 className="font-display font-bold text-xl">Roblox Whitelist</h2>
           <p className="text-sm text-muted mt-1">
@@ -303,7 +303,7 @@ end)
             otomatis dinonaktifkan oleh security gate di Main script.
           </p>
         </div>
-        <Button onClick={openCreate}>
+        <Button onClick={openCreate} className="w-full sm:w-auto">
           <Plus className="h-4 w-4" /> Tambah Akun
         </Button>
       </div>
@@ -434,8 +434,8 @@ end)
       ) : entries.length === 0 ? (
         <p className="text-sm text-muted">Belum ada akun di whitelist — sistem Marching nonaktif di semua server live.</p>
       ) : (
-        <div className="rounded-2xl border border-border bg-surface overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="rounded-2xl border border-border bg-surface overflow-hidden overflow-x-auto">
+          <table className="w-full text-sm min-w-[480px]">
             <thead>
               <tr className="border-b border-border text-left text-muted-2">
                 <th className="px-4 py-3 font-medium">Username</th>
@@ -479,8 +479,8 @@ end)
           melakukan recheck pertamanya.
         </p>
       ) : (
-        <div className="rounded-2xl border border-border bg-surface overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="rounded-2xl border border-border bg-surface overflow-hidden overflow-x-auto">
+          <table className="w-full text-sm min-w-[640px]">
             <thead>
               <tr className="border-b border-border text-left text-muted-2">
                 <th className="px-4 py-3 font-medium">Akun</th>
