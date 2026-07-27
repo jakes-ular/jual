@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { CheckCircle2, Clock, Copy, Download, RefreshCw, XCircle } from "lucide-react";
+import { CheckCircle2, Clock, Copy, Download, RefreshCw, XCircle, Upload, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatRupiah, formatDateTime } from "@/lib/utils";
@@ -24,6 +24,7 @@ interface OrderData {
     status: string;
     referenceCode: string;
     expiresAt: string | null;
+    proofUrl: string | null;
   } | null;
 }
 
@@ -33,6 +34,7 @@ export function CheckoutSuccessContent() {
   const [order, setOrder] = useState<OrderData | null>(null);
   const [qrisImageUrl, setQrisImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
 
   const fetchOrder = useCallback(async () => {
     if (!orderId) return;
@@ -53,6 +55,25 @@ export function CheckoutSuccessContent() {
     if (!order?.payment) return;
     navigator.clipboard.writeText(order.payment.referenceCode);
     toast.success("Kode referensi disalin");
+  }
+
+  async function handleProofUpload(fileList: FileList | null) {
+    const file = fileList?.[0];
+    if (!file || !order) return;
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch(`/api/orders/${order.id}/proof`, { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Gagal mengunggah bukti pembayaran");
+      toast.success("Bukti pembayaran berhasil diunggah");
+      setOrder(data.order);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Terjadi kesalahan");
+    } finally {
+      setUploading(false);
+    }
   }
 
   return (
@@ -130,6 +151,40 @@ export function CheckoutSuccessContent() {
                       Bayar sebelum {formatDateTime(order.payment.expiresAt)}
                     </p>
                   )}
+                </div>
+              )}
+
+              {order.status === "PENDING" && order.payment && (
+                <div className="rounded-xl border border-primary/40 bg-primary/5 p-4 mb-4">
+                  <p className="text-sm font-semibold mb-1">
+                    {order.payment.proofUrl ? "Bukti Pembayaran" : "Upload Bukti Pembayaran (Wajib)"}
+                  </p>
+                  <p className="text-xs text-muted mb-3">
+                    {order.payment.proofUrl
+                      ? "Bukti pembayaran sudah diunggah. Admin akan mengonfirmasi pesanan Anda."
+                      : "Setelah membayar, unggah screenshot/foto bukti transfer agar admin dapat memverifikasi pesanan Anda."}
+                  </p>
+                  {order.payment.proofUrl && (
+                    <a href={order.payment.proofUrl} target="_blank" rel="noopener noreferrer" className="inline-block mb-3">
+                      <Image
+                        src={order.payment.proofUrl}
+                        alt="Bukti pembayaran"
+                        width={100}
+                        height={100}
+                        className="rounded-lg border border-border object-cover"
+                      />
+                    </a>
+                  )}
+                  <label className="flex items-center justify-center gap-2 h-11 rounded-xl border-2 border-dashed border-border cursor-pointer hover:border-border-strong text-sm text-muted-2 px-4 w-fit mx-auto">
+                    {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                    {order.payment.proofUrl ? "Ganti bukti pembayaran" : "Unggah bukti pembayaran"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleProofUpload(e.target.files)}
+                    />
+                  </label>
                 </div>
               )}
 

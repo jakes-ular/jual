@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Image from "next/image";
 import { toast } from "sonner";
 import { Search, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { Input, Select } from "@/components/ui/input";
@@ -26,7 +27,7 @@ interface AdminOrder {
   status: string;
   createdAt: string;
   items: OrderItem[];
-  payment: { method: string; referenceCode: string; status: string } | null;
+  payment: { method: string; referenceCode: string; status: string; proofUrl: string | null } | null;
 }
 
 const STATUS_OPTIONS = ["PENDING", "PAID", "FAILED", "CANCELLED", "EXPIRED"];
@@ -58,7 +59,12 @@ export default function AdminOrdersPage() {
 
   async function updateStatus(order: AdminOrder, newStatus: string) {
     if (newStatus === order.status) return;
-    if (newStatus === "PAID" && !confirm(`Konfirmasi pembayaran untuk order ${order.orderNumber}?`)) return;
+    if (newStatus === "PAID") {
+      const confirmMsg = order.payment?.proofUrl
+        ? `Konfirmasi pembayaran untuk order ${order.orderNumber}?`
+        : `Order ${order.orderNumber} belum ada bukti pembayaran. Tetap konfirmasi PAID?`;
+      if (!confirm(confirmMsg)) return;
+    }
 
     setUpdating(order.id);
     try {
@@ -159,6 +165,25 @@ export default function AdminOrdersPage() {
                       <span>Metode: {o.payment.method.replace("_", " ")}</span>
                       <span>Ref: {o.payment.referenceCode}</span>
                       <span>Status Pembayaran: {o.payment.status}</span>
+                    </div>
+                  )}
+
+                  {o.payment && (
+                    <div>
+                      <p className="text-xs text-muted-2 mb-1">Bukti Pembayaran</p>
+                      {o.payment.proofUrl ? (
+                        <a href={o.payment.proofUrl} target="_blank" rel="noopener noreferrer" className="inline-block">
+                          <Image
+                            src={o.payment.proofUrl}
+                            alt="Bukti pembayaran"
+                            width={120}
+                            height={120}
+                            className="rounded-lg border border-border object-cover"
+                          />
+                        </a>
+                      ) : (
+                        <p className="text-danger text-xs">Belum diunggah</p>
+                      )}
                     </div>
                   )}
 
