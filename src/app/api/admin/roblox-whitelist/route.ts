@@ -9,7 +9,10 @@ export async function GET() {
   if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
   const [entries, secret] = await Promise.all([
-    prisma.robloxWhitelist.findMany({ orderBy: { createdAt: "desc" } }),
+    prisma.robloxWhitelist.findMany({
+      orderBy: { createdAt: "desc" },
+      include: { sessions: { orderBy: { lastSeenAt: "desc" } } },
+    }),
     getOrCreateWhitelistSecret(),
   ]);
   return NextResponse.json({ entries, secret });

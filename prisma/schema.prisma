@@ -245,7 +245,32 @@ model RobloxWhitelist {
   note           String?
   createdAt      DateTime @default(now())
 
+  sessions       RobloxAssetSession[]
+
   @@index([robloxUserId])
+}
+
+// Live "where is this asset currently running" telemetry, reported by the
+// asset's own security gate script via POST /api/roblox-whitelist/heartbeat
+// on the same interval it re-checks the whitelist (see ServerScriptService.Main
+// in the Roblox place). One row per (whitelisted account, asset, place) --
+// re-reported on every heartbeat, not appended, so this only ever reflects
+// the latest sighting, never a history log. assetKey defaults to "marching"
+// (the only asset wired up today) but exists so other assets can reuse the
+// same whitelist account + gate pattern under their own key and show up
+// side by side in the admin live-tracking table.
+model RobloxAssetSession {
+  id          String   @id @default(cuid())
+  whitelistId String
+  whitelist   RobloxWhitelist @relation(fields: [whitelistId], references: [id], onDelete: Cascade)
+  assetKey    String   @default("marching")
+  placeId     String
+  placeName   String?
+  lastSeenAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@unique([whitelistId, assetKey, placeId])
+  @@index([lastSeenAt])
 }
 
 model Appeal {

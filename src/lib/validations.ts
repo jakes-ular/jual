@@ -94,3 +94,10 @@ export const robloxWhitelistSchema = z.object({
   robloxUsername: z.string().min(3, "Username Roblox minimal 3 karakter").max(50),
   note: z.string().max(200).optional(),
 });
+
+export const robloxHeartbeatSchema = z.object({
+  creatorId: z.coerce.number().int().positive(),
+  placeId: z.coerce.string().min(1).max(30),
+  placeName: z.string().max(200).optional(),
+  assetKey: z.string().min(1).max(50).optional(),
+});
