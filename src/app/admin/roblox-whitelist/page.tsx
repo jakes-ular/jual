@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, Copy, RefreshCw, Eye, EyeOff, ShieldCheck, ListChecks } from "lucide-react";
+import { Plus, Trash2, Copy, RefreshCw, Eye, EyeOff, ShieldCheck, ListChecks, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Label, FieldError } from "@/components/ui/input";
 import { Dialog } from "@/components/ui/dialog";
@@ -16,11 +16,13 @@ interface WhitelistEntry {
 }
 
 const WHITELIST_URL_PATH = "/api/roblox-whitelist";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export default function AdminRobloxWhitelistPage() {
   const [entries, setEntries] = useState<WhitelistEntry[]>([]);
   const [secret, setSecret] = useState("");
   const [showSecret, setShowSecret] = useState(false);
+  const [showFullScript, setShowFullScript] = useState(true);
   const [loading, setLoading] = useState(true);
   const [regenerating, setRegenerating] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<WhitelistEntry | null>(null);
@@ -111,7 +113,109 @@ export default function AdminRobloxWhitelistPage() {
     toast.success(`${label} disalin`);
   }
 
-  const fullUrl = typeof window !== "undefined" ? `${window.location.origin}${WHITELIST_URL_PATH}` : WHITELIST_URL_PATH;
+  const fullUrl = `${SITE_URL}${WHITELIST_URL_PATH}`;
+
+  function buildFullScript(keyValue: string) {
+    return `--!strict
+
+--[[
+	SECURITY GATE: this script only lets whatever comes after it run if the
+	place's Creator (game.CreatorId) -- by robloxUserId, not just username --
+	is present in the whitelist hosted on the VoxMarket admin dashboard
+	(/admin/roblox-whitelist). An unauthorized copy of this place -- e.g.
+	leaked and republished under someone else's account, or just this
+	script pasted into a different place -- silently gets nothing.
+
+	Enforced everywhere, including Studio (Edit/Play/Team Test) -- there is
+	no bypass. Only the whitelisted owner's own place ever passes the check,
+	in Studio or live.
+]]
+
+local HttpService = game:GetService("HttpService")
+
+-- Public endpoint on the VoxMarket admin dashboard; managed from
+-- /admin/roblox-whitelist. WHITELIST_KEY must match the secret shown on
+-- that page -- it isn't the real security boundary (that's the per-
+-- robloxUserId check below), just cheap scraping/noise protection on the
+-- endpoint. Re-copy both if the secret is ever regenerated.
+local WHITELIST_URL = "${fullUrl}"
+local WHITELIST_KEY = "${keyValue}"
+local WHITELIST_RECHECK_INTERVAL = 300 -- seconds; re-checked in Studio and live alike
+
+-- Every protected remote handler / loop below must check this before doing
+-- anything -- it starts false and is only ever flipped by the gate below
+-- and by the recheck loop.
+local SystemEnabled = false
+
+-- Response shape expected from WHITELIST_URL:
+-- {"users": [{"username": "SomeRobloxUser", "userId": 123456}, ...]}
+-- Matches directly on robloxUserId (game.CreatorId) -- no
+-- Players:GetUserIdFromNameAsync round-trip needed, so this keeps working
+-- even if the whitelisted account later changes its Roblox username.
+local function isCreatorWhitelisted(): boolean
+	if game.CreatorType ~= Enum.CreatorType.User then
+		-- Group-owned places aren't supported by this simple check.
+		return false
+	end
+	if WHITELIST_URL == "" then
+		return false
+	end
+
+	local creatorId = game.CreatorId
+
+	local fetchOk, response = pcall(function()
+		return HttpService:RequestAsync({
+			Url = WHITELIST_URL,
+			Method = "GET",
+			Headers = { ["x-whitelist-key"] = WHITELIST_KEY },
+		})
+	end)
+	if not fetchOk or not response.Success then
+		warn("[Security] Failed to fetch whitelist:", if fetchOk then response.StatusCode else response)
+		return false
+	end
+
+	local decodeOk, data = pcall(function()
+		return HttpService:JSONDecode(response.Body)
+	end)
+	if not decodeOk or typeof(data) ~= "table" or typeof(data.users) ~= "table" then
+		warn("[Security] Whitelist response was not in the expected format")
+		return false
+	end
+
+	for _, entry in ipairs(data.users) do
+		if typeof(entry) == "table" and tonumber(entry.userId) == creatorId then
+			return true
+		end
+	end
+	return false
+end
+
+SystemEnabled = isCreatorWhitelisted()
+if not SystemEnabled then
+	warn("[Security] This place's owner is not whitelisted -- protected systems will not load.")
+	return
+end
+
+task.spawn(function()
+	while true do
+		task.wait(WHITELIST_RECHECK_INTERVAL)
+		local ok = isCreatorWhitelisted()
+		if ok ~= SystemEnabled then
+			SystemEnabled = ok
+			warn(if ok
+				then "[Security] Whitelist re-check passed -- protected systems re-enabled."
+				else "[Security] Whitelist re-check failed -- protected systems disabled.")
+		end
+	end
+end)
+
+-- Everything below this line only ever runs for a whitelisted place's
+-- owner. Put the rest of your protected code here, and make sure every
+-- RemoteEvent/RemoteFunction handler and every loop checks SystemEnabled
+-- before doing anything.
+`;
+  }
 
   return (
     <div>
@@ -190,6 +294,41 @@ export default function AdminRobloxWhitelistPage() {
           WHITELIST_KEY yang baru dan publish ulang — sampai itu dilakukan, sistem berhenti berfungsi
           di server live maupun di Studio.
         </p>
+
+        <div className="mt-5 pt-4 border-t border-border">
+          <button
+            type="button"
+            onClick={() => setShowFullScript((s) => !s)}
+            className="flex items-center gap-2 text-sm font-medium text-foreground"
+          >
+            {showFullScript ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            Script Security Gate Lengkap (siap tempel jadi seisi ServerScriptService.Main)
+          </button>
+          <p className="text-xs text-muted-2 mt-1.5 mb-3">
+            Ini kode gate keamanannya secara utuh, bukan cuma dua baris konfigurasi — URL &amp; key di
+            dalamnya sudah otomatis terisi nilai akun kamu. Kalau <span className="font-mono">Main</span>{" "}
+            belum ada / mau dibuat dari nol, tinggal salin semua ini jadi isi scriptnya; kode
+            sistem yang mau kamu lindungi ditaruh di bawah komentar paling akhir. Kalau{" "}
+            <span className="font-mono">Main</span> sudah ada dan cuma perlu update dua variabel,
+            cukup pakai potongan kecil di langkah 2 di atas.
+          </p>
+          {showFullScript && (
+            <div className="rounded-lg bg-surface-2 border border-border p-3 flex items-start justify-between gap-2">
+              <pre className="font-mono text-xs whitespace-pre-wrap break-all text-foreground max-h-96 overflow-y-auto">
+                {buildFullScript(loading ? "" : showSecret ? secret : "•".repeat(24))}
+              </pre>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="shrink-0"
+                onClick={() => copyToClipboard(buildFullScript(secret), "Script keamanan lengkap")}
+              >
+                <Copy className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="rounded-2xl border border-border bg-surface p-5 mb-6">
