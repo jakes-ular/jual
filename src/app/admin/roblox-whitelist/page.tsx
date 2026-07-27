@@ -142,9 +142,28 @@ export default function AdminRobloxWhitelistPage() {
           </li>
           <li>
             <span className="text-foreground font-medium">Buka script <span className="font-mono text-xs">ServerScriptService.Main</span></span> —
-            skrip inti sistem Marching, taruh copy-an <span className="font-mono text-xs">WHITELIST_URL</span>{" "}
-            dan <span className="font-mono text-xs">WHITELIST_KEY</span> dari kotak di bawah ini ke dua
-            variabel dengan nama sama persis di bagian atas script tersebut.
+            skrip inti sistem Marching, cari dua baris <span className="font-mono text-xs">WHITELIST_URL</span>{" "}
+            dan <span className="font-mono text-xs">WHITELIST_KEY</span> di bagian atas script itu, lalu
+            ganti persis dengan potongan berikut (klik ikon copy buat salin dua baris sekaligus):
+            <div className="mt-2 rounded-lg bg-surface-2 border border-border p-3 flex items-start justify-between gap-2">
+              <pre className="font-mono text-xs whitespace-pre-wrap break-all text-foreground">
+                {`local WHITELIST_URL = "${fullUrl}"\nlocal WHITELIST_KEY = "${loading ? "" : showSecret ? secret : "•".repeat(24)}"`}
+              </pre>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="shrink-0"
+                onClick={() =>
+                  copyToClipboard(
+                    `local WHITELIST_URL = "${fullUrl}"\nlocal WHITELIST_KEY = "${secret}"`,
+                    "Potongan script"
+                  )
+                }
+              >
+                <Copy className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           </li>
           <li>
             <span className="text-foreground font-medium">Tambahkan akun ke whitelist</span> — klik{" "}
