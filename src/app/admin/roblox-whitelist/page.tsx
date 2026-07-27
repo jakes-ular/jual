@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, Copy, RefreshCw, Eye, EyeOff, ShieldCheck } from "lucide-react";
+import { Plus, Trash2, Copy, RefreshCw, Eye, EyeOff, ShieldCheck, ListChecks } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Label, FieldError } from "@/components/ui/input";
 import { Dialog } from "@/components/ui/dialog";
@@ -126,6 +126,51 @@ export default function AdminRobloxWhitelistPage() {
         <Button onClick={openCreate}>
           <Plus className="h-4 w-4" /> Tambah Akun
         </Button>
+      </div>
+
+      <div className="rounded-2xl border border-border bg-surface p-5 mb-6">
+        <div className="flex items-center gap-2 mb-3">
+          <ListChecks className="h-4 w-4 text-primary-2" />
+          <h3 className="font-semibold text-sm">Cara Memasang Whitelist di Script Roblox</h3>
+        </div>
+        <ol className="space-y-3 text-sm text-muted list-decimal list-inside">
+          <li>
+            <span className="text-foreground font-medium">Nyalakan HTTP Requests</span> — di Roblox
+            Studio buka <span className="font-mono text-xs">Game Settings &gt; Security</span> dan
+            aktifkan <span className="font-mono text-xs">Allow HTTP Requests</span>. Tanpa ini script
+            tidak bisa menghubungi endpoint whitelist sama sekali (gagal → dianggap tidak whitelisted).
+          </li>
+          <li>
+            <span className="text-foreground font-medium">Buka script <span className="font-mono text-xs">ServerScriptService.Main</span></span> —
+            skrip inti sistem Marching, taruh copy-an <span className="font-mono text-xs">WHITELIST_URL</span>{" "}
+            dan <span className="font-mono text-xs">WHITELIST_KEY</span> dari kotak di bawah ini ke dua
+            variabel dengan nama sama persis di bagian atas script tersebut.
+          </li>
+          <li>
+            <span className="text-foreground font-medium">Tambahkan akun ke whitelist</span> — klik{" "}
+            <span className="font-mono text-xs">Tambah Akun</span> di bawah, isi{" "}
+            <span className="text-foreground">username</span> Roblox-nya (bukan User ID, itu otomatis
+            diambil). <span className="text-foreground font-medium">Wajib termasuk akun owner tempat/place itu sendiri</span>,
+            karena yang dicek script adalah pemilik place (<span className="font-mono text-xs">game.CreatorId</span>),
+            bukan pemain yang masuk ke server.
+          </li>
+          <li>
+            <span className="text-foreground font-medium">Publish ulang ke Roblox</span> — dari Studio,{" "}
+            <span className="font-mono text-xs">File &gt; Publish to Roblox</span>, supaya server live
+            memakai script yang sudah berisi URL &amp; key di atas.
+          </li>
+          <li>
+            <span className="text-foreground font-medium">Cek juga berlaku di Studio</span> — pengecekan
+            whitelist ini aktif di Edit/Play/Team Test juga, bukan cuma server live. Kalau akun owner
+            belum ada di whitelist, sistem Marching juga tidak akan jalan saat testing di Studio —
+            itu perilaku normal, pastikan akun owner sudah ditambahkan di langkah 3.
+          </li>
+        </ol>
+        <p className="text-xs text-muted-2 mt-3">
+          Kalau secret di-regenerate lewat tombol refresh di bawah, ulangi langkah 2 dengan nilai
+          WHITELIST_KEY yang baru dan publish ulang — sampai itu dilakukan, sistem berhenti berfungsi
+          di server live maupun di Studio.
+        </p>
       </div>
 
       <div className="rounded-2xl border border-border bg-surface p-5 mb-6">
