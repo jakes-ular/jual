@@ -57,13 +57,15 @@ export const topupGameSchema = z.object({
   description: z.string().max(300).optional(),
   icon: z.string().max(500).optional(),
   bannerUrl: z.string().max(500).optional(),
-  bgColor: z.string().max(9).optional(),
+  bgColors: z.array(z.string().max(9)).max(6).optional(),
   textColor: z.string().max(9).optional(),
+  patternUrl: z.string().max(500).optional(),
   status: z.enum(["PUBLISHED", "DRAFT"]).default("DRAFT"),
 });
 
 export const topupItemSchema = z.object({
   name: z.string().min(1, "Nama item wajib diisi").max(80),
+  icon: z.string().max(500).optional(),
   price: z.coerce.number().int().min(0, "Harga tidak valid"),
   status: z.enum(["PUBLISHED", "DRAFT"]).default("PUBLISHED"),
 });

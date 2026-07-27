@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { formatRupiah } from "@/lib/utils";
+import { buildTopupBackgroundStyle } from "@/lib/topup-theme";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -37,10 +38,12 @@ export default async function TopupGamePage({ params }: Props) {
 
   if (!game || game.status !== "PUBLISHED") notFound();
 
+  const pageBackground = buildTopupBackgroundStyle(game.bgColors, game.patternUrl);
+
   return (
     <>
       <Navbar />
-      <main className="flex-1" style={game.bgColor ? { backgroundColor: game.bgColor } : undefined}>
+      <main className="flex-1" style={pageBackground}>
         {game.bannerUrl && (
           <div className="relative w-full h-40 sm:h-56 lg:h-72">
             <Image src={game.bannerUrl} alt={`Banner ${game.name}`} fill sizes="100vw" className="object-cover" priority />
@@ -83,8 +86,12 @@ export default async function TopupGamePage({ params }: Props) {
                   href={`/topup/${game.slug}/${item.id}`}
                   className="group rounded-2xl border border-border bg-surface p-5 hover-lift flex flex-col items-center text-center gap-2"
                 >
-                  <div className="h-11 w-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary-2 group-hover:bg-gradient-brand group-hover:text-white transition-colors">
-                    <Coins className="h-5 w-5" />
+                  <div className="relative h-11 w-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary-2 group-hover:bg-gradient-brand group-hover:text-white transition-colors overflow-hidden">
+                    {item.icon ? (
+                      <Image src={item.icon} alt={item.name} fill sizes="44px" className="object-cover" />
+                    ) : (
+                      <Coins className="h-5 w-5" />
+                    )}
                   </div>
                   <h3 className="text-sm font-semibold mt-1">{item.name}</h3>
                   <p className="font-display font-bold text-base">{formatRupiah(item.price)}</p>

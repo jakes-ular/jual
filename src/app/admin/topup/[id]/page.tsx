@@ -3,8 +3,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { use } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, Loader2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input, Select, Label, FieldError } from "@/components/ui/input";
@@ -16,6 +17,7 @@ import { Coins } from "lucide-react";
 interface Item {
   id: string;
   name: string;
+  icon: string | null;
   price: number;
   status: string;
 }
@@ -35,10 +37,12 @@ export default function AdminTopupGameDetailPage({ params }: { params: Promise<{
   const [deleteTarget, setDeleteTarget] = useState<Item | null>(null);
 
   const [name, setName] = useState("");
+  const [icon, setIcon] = useState("");
   const [price, setPrice] = useState("");
   const [status, setStatus] = useState<"PUBLISHED" | "DRAFT">("PUBLISHED");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -55,6 +59,7 @@ export default function AdminTopupGameDetailPage({ params }: { params: Promise<{
   function openCreate() {
     setEditing(null);
     setName("");
+    setIcon("");
     setPrice("");
     setStatus("PUBLISHED");
     setError("");
@@ -64,10 +69,30 @@ export default function AdminTopupGameDetailPage({ params }: { params: Promise<{
   function openEdit(item: Item) {
     setEditing(item);
     setName(item.name);
+    setIcon(item.icon ?? "");
     setPrice(String(item.price));
     setStatus(item.status as "PUBLISHED" | "DRAFT");
     setError("");
     setModalOpen(true);
+  }
+
+  async function handleIconUpload(fileList: FileList | null) {
+    const file = fileList?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("kind", "image");
+      formData.append("file", file);
+      const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Gagal mengunggah gambar");
+      setIcon(data.url);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal mengunggah gambar");
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -75,7 +100,7 @@ export default function AdminTopupGameDetailPage({ params }: { params: Promise<{
     setError("");
     setSaving(true);
     try {
-      const payload = { name, price: Number(price), status, ...(editing ? {} : { gameId: id }) };
+      const payload = { name, icon, price: Number(price), status, ...(editing ? {} : { gameId: id }) };
       const res = await fetch(editing ? `/api/admin/topup/items/${editing.id}` : "/api/admin/topup/items", {
         method: editing ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
@@ -139,7 +164,18 @@ export default function AdminTopupGameDetailPage({ params }: { params: Promise<{
             <tbody>
               {game.items.map((item) => (
                 <tr key={item.id} className="border-b border-border last:border-0">
-                  <td className="px-4 py-3 font-medium">{item.name}</td>
+                  <td className="px-4 py-3 font-medium">
+                    <div className="flex items-center gap-2.5">
+                      <div className="relative h-8 w-8 rounded-lg overflow-hidden bg-surface-2 shrink-0 flex items-center justify-center">
+                        {item.icon ? (
+                          <Image src={item.icon} alt={item.name} fill sizes="32px" className="object-cover" />
+                        ) : (
+                          <Coins className="h-4 w-4 text-muted-2" />
+                        )}
+                      </div>
+                      {item.name}
+                    </div>
+                  </td>
                   <td className="px-4 py-3">{formatRupiah(item.price)}</td>
                   <td className="px-4 py-3">
                     <Badge variant={item.status === "PUBLISHED" ? "success" : "draft"}>{item.status}</Badge>
@@ -166,6 +202,27 @@ export default function AdminTopupGameDetailPage({ params }: { params: Promise<{
           <div>
             <Label htmlFor="itemName">Nama Item</Label>
             <Input id="itemName" value={name} onChange={(e) => setName(e.target.value)} placeholder="86 Diamond" required />
+          </div>
+          <div>
+            <Label>Logo Item (opsional)</Label>
+            <p className="text-xs text-muted-2 mb-2">Ikon khusus buat denominasi ini, kalau kosong pakai ikon koin default.</p>
+            {icon && (
+              <div className="relative h-16 w-16 rounded-xl overflow-hidden border border-border mb-2">
+                <Image src={icon} alt="" fill sizes="64px" className="object-cover" />
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              <label className="flex items-center justify-center gap-2 h-11 rounded-xl border-2 border-dashed border-border cursor-pointer hover:border-border-strong text-sm text-muted-2 w-fit px-4">
+                {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                {icon ? "Ganti logo" : "Unggah logo"}
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => handleIconUpload(e.target.files)} />
+              </label>
+              {icon && (
+                <Button type="button" variant="ghost" size="sm" onClick={() => setIcon("")}>
+                  Hapus
+                </Button>
+              )}
+            </div>
           </div>
           <div>
             <Label htmlFor="itemPrice">Harga (Rp)</Label>

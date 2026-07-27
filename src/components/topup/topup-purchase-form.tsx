@@ -13,7 +13,7 @@ import { formatRupiah } from "@/lib/utils";
 import { PAYMENT_METHODS, type PaymentMethod } from "@/lib/payment";
 
 interface Props {
-  item: { id: string; name: string; price: number };
+  item: { id: string; name: string; price: number; icon: string | null };
   game: { name: string; slug: string; icon: string | null };
 }
 
@@ -90,8 +90,8 @@ export function TopupPurchaseForm({ item, game }: Props) {
 
       <div className="flex items-center gap-4 mt-4 mb-8">
         <div className="relative h-14 w-14 rounded-xl overflow-hidden bg-surface-2 shrink-0">
-          {game.icon ? (
-            <Image src={game.icon} alt={game.name} fill sizes="56px" className="object-cover" />
+          {item.icon || game.icon ? (
+            <Image src={item.icon || game.icon!} alt={game.name} fill sizes="56px" className="object-cover" />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-muted-2">
               <Gamepad2 className="h-6 w-6" />

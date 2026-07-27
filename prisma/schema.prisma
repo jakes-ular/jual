@@ -297,8 +297,9 @@ model TopupGame {
   slug        String   @unique
   icon        String?  // small logo image url shown on the game card
   bannerUrl   String?  // wide banner shown on this game's own /topup/[slug] page
-  bgColor     String?  // hex background color for that page's header section
+  bgColors    String[] @default([]) // hex stops for that page's background gradient -- 1 = solid, 2+ = linear-gradient
   textColor   String?  // hex heading/text color for that page's header section
+  patternUrl  String?  // optional repeating texture/motif layered over the gradient
   description String?
   status      String   @default("DRAFT") // PUBLISHED | DRAFT
   createdAt   DateTime @default(now())
@@ -314,6 +315,7 @@ model TopupItem {
   gameId    String
   game      TopupGame @relation(fields: [gameId], references: [id], onDelete: Cascade)
   name      String    // e.g. "86 Diamond"
+  icon      String?   // per-item logo/icon, overrides the generic coin icon
   price     Int
   status    String    @default("PUBLISHED") // PUBLISHED | DRAFT
   createdAt DateTime  @default(now())

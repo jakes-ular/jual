@@ -25,7 +25,7 @@ export default async function TopupItemPage({ params }: Props) {
       <Navbar />
       <main className="flex-1">
         <TopupPurchaseForm
-          item={{ id: item.id, name: item.name, price: item.price }}
+          item={{ id: item.id, name: item.name, price: item.price, icon: item.icon }}
           game={{ name: item.game.name, slug: item.game.slug, icon: item.game.icon }}
         />
       </main>

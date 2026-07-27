@@ -11,6 +11,7 @@ import { Input, Textarea, Select, Label, FieldError } from "@/components/ui/inpu
 import { Dialog } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/ui/states";
 import { TopupTabs } from "@/components/admin/topup-tabs";
+import { buildTopupBackgroundStyle } from "@/lib/topup-theme";
 
 interface Game {
   id: string;
@@ -19,14 +20,16 @@ interface Game {
   description: string | null;
   icon: string | null;
   bannerUrl: string | null;
-  bgColor: string | null;
+  bgColors: string[];
   textColor: string | null;
+  patternUrl: string | null;
   status: string;
   _count: { items: number };
 }
 
-const DEFAULT_BG_COLOR = "#ffffff";
+const DEFAULT_BG_COLORS = ["#ffffff"];
 const DEFAULT_TEXT_COLOR = "#12141b";
+const MAX_BG_COLORS = 6;
 
 export default function AdminTopupGamesPage() {
   const [games, setGames] = useState<Game[]>([]);
@@ -39,13 +42,15 @@ export default function AdminTopupGamesPage() {
   const [description, setDescription] = useState("");
   const [icon, setIcon] = useState("");
   const [bannerUrl, setBannerUrl] = useState("");
-  const [bgColor, setBgColor] = useState(DEFAULT_BG_COLOR);
+  const [bgColors, setBgColors] = useState<string[]>(DEFAULT_BG_COLORS);
   const [textColor, setTextColor] = useState(DEFAULT_TEXT_COLOR);
+  const [patternUrl, setPatternUrl] = useState("");
   const [status, setStatus] = useState<"PUBLISHED" | "DRAFT">("DRAFT");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [uploadingPattern, setUploadingPattern] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -65,8 +70,9 @@ export default function AdminTopupGamesPage() {
     setDescription("");
     setIcon("");
     setBannerUrl("");
-    setBgColor(DEFAULT_BG_COLOR);
+    setBgColors(DEFAULT_BG_COLORS);
     setTextColor(DEFAULT_TEXT_COLOR);
+    setPatternUrl("");
     setStatus("DRAFT");
     setError("");
     setModalOpen(true);
@@ -78,11 +84,24 @@ export default function AdminTopupGamesPage() {
     setDescription(g.description ?? "");
     setIcon(g.icon ?? "");
     setBannerUrl(g.bannerUrl ?? "");
-    setBgColor(g.bgColor || DEFAULT_BG_COLOR);
+    setBgColors(g.bgColors.length > 0 ? g.bgColors : DEFAULT_BG_COLORS);
     setTextColor(g.textColor || DEFAULT_TEXT_COLOR);
+    setPatternUrl(g.patternUrl ?? "");
     setStatus(g.status as "PUBLISHED" | "DRAFT");
     setError("");
     setModalOpen(true);
+  }
+
+  function updateBgColor(index: number, value: string) {
+    setBgColors((prev) => prev.map((c, i) => (i === index ? value : c)));
+  }
+
+  function addBgColor() {
+    setBgColors((prev) => (prev.length >= MAX_BG_COLORS ? prev : [...prev, "#ffffff"]));
+  }
+
+  function removeBgColor(index: number) {
+    setBgColors((prev) => (prev.length <= 1 ? prev : prev.filter((_, i) => i !== index)));
   }
 
   async function handleIconUpload(fileList: FileList | null) {
@@ -123,6 +142,25 @@ export default function AdminTopupGamesPage() {
     }
   }
 
+  async function handlePatternUpload(fileList: FileList | null) {
+    const file = fileList?.[0];
+    if (!file) return;
+    setUploadingPattern(true);
+    try {
+      const formData = new FormData();
+      formData.append("kind", "image");
+      formData.append("file", file);
+      const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Gagal mengunggah gambar");
+      setPatternUrl(data.url);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal mengunggah gambar");
+    } finally {
+      setUploadingPattern(false);
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -131,7 +169,7 @@ export default function AdminTopupGamesPage() {
       const res = await fetch(editing ? `/api/admin/topup/games/${editing.id}` : "/api/admin/topup/games", {
         method: editing ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, description, icon, bannerUrl, bgColor, textColor, status }),
+        body: JSON.stringify({ name, description, icon, bannerUrl, bgColors, textColor, patternUrl, status }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Gagal menyimpan game");
@@ -264,41 +302,84 @@ export default function AdminTopupGamesPage() {
           </div>
           <div className="pt-3 border-t border-border">
             <Label>Tema Halaman</Label>
-            <p className="text-xs text-muted-2 mb-2">Warna latar dan teks khusus untuk halaman game ini.</p>
-            <div className="flex gap-4">
-              <div className="flex-1">
-                <Label htmlFor="gameBgColor" className="text-xs">Warna Background</Label>
-                <div className="flex items-center gap-2">
+            <p className="text-xs text-muted-2 mb-2">
+              Warna background bisa lebih dari satu jadi gradasi, plus warna teks dan motif/pattern opsional.
+            </p>
+
+            <Label className="text-xs">Warna Background (gradasi)</Label>
+            <div className="space-y-2 mt-1 mb-2">
+              {bgColors.map((color, i) => (
+                <div key={i} className="flex items-center gap-2">
                   <input
-                    id="gameBgColor"
                     type="color"
-                    value={bgColor}
-                    onChange={(e) => setBgColor(e.target.value)}
+                    value={color}
+                    onChange={(e) => updateBgColor(i, e.target.value)}
                     className="h-10 w-11 rounded-lg border border-border cursor-pointer bg-transparent p-0.5"
                   />
-                  <Input value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="font-mono text-xs" />
+                  <Input value={color} onChange={(e) => updateBgColor(i, e.target.value)} className="font-mono text-xs" />
+                  {bgColors.length > 1 && (
+                    <Button type="button" variant="ghost" size="icon" onClick={() => removeBgColor(i)}>
+                      <Trash2 className="h-3.5 w-3.5 text-danger" />
+                    </Button>
+                  )}
                 </div>
-              </div>
-              <div className="flex-1">
-                <Label htmlFor="gameTextColor" className="text-xs">Warna Teks</Label>
-                <div className="flex items-center gap-2">
-                  <input
-                    id="gameTextColor"
-                    type="color"
-                    value={textColor}
-                    onChange={(e) => setTextColor(e.target.value)}
-                    className="h-10 w-11 rounded-lg border border-border cursor-pointer bg-transparent p-0.5"
-                  />
-                  <Input value={textColor} onChange={(e) => setTextColor(e.target.value)} className="font-mono text-xs" />
-                </div>
+              ))}
+            </div>
+            {bgColors.length < MAX_BG_COLORS && (
+              <Button type="button" variant="outline" size="sm" onClick={addBgColor}>
+                <Plus className="h-3.5 w-3.5" /> Tambah Warna
+              </Button>
+            )}
+
+            <div className="mt-4">
+              <Label htmlFor="gameTextColor" className="text-xs">Warna Teks</Label>
+              <div className="flex items-center gap-2">
+                <input
+                  id="gameTextColor"
+                  type="color"
+                  value={textColor}
+                  onChange={(e) => setTextColor(e.target.value)}
+                  className="h-10 w-11 rounded-lg border border-border cursor-pointer bg-transparent p-0.5"
+                />
+                <Input value={textColor} onChange={(e) => setTextColor(e.target.value)} className="font-mono text-xs" />
               </div>
             </div>
+
+            <div className="mt-4">
+              <Label>Motif / Pattern (opsional)</Label>
+              <p className="text-xs text-muted-2 mb-2">
+                Gambar tekstur/pola yang diulang menutupi background — pakai PNG transparan biar gradasinya tetap kelihatan.
+              </p>
+              {patternUrl && (
+                <div
+                  className="h-20 w-full rounded-xl border border-border mb-2"
+                  style={{ backgroundImage: `url(${patternUrl})`, backgroundRepeat: "repeat" }}
+                />
+              )}
+              <div className="flex items-center gap-2">
+                <label className="flex items-center justify-center gap-2 h-11 rounded-xl border-2 border-dashed border-border cursor-pointer hover:border-border-strong text-sm text-muted-2 w-fit px-4">
+                  {uploadingPattern ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                  {patternUrl ? "Ganti motif" : "Unggah motif"}
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => handlePatternUpload(e.target.files)} />
+                </label>
+                {patternUrl && (
+                  <Button type="button" variant="ghost" size="sm" onClick={() => setPatternUrl("")}>
+                    Hapus
+                  </Button>
+                )}
+              </div>
+            </div>
+
             <div
-              className="mt-3 rounded-xl border border-border p-4 text-center transition-colors"
-              style={{ backgroundColor: bgColor, color: textColor }}
+              className="mt-4 rounded-xl border border-border p-4 text-center transition-colors"
+              style={buildTopupBackgroundStyle(bgColors, patternUrl)}
             >
-              <p className="text-sm font-semibold">Pratinjau Halaman {name || "Game"}</p>
-              <p className="text-xs mt-1 opacity-80">Contoh tampilan warna background & teks</p>
+              <p className="text-sm font-semibold" style={{ color: textColor }}>
+                Pratinjau Halaman {name || "Game"}
+              </p>
+              <p className="text-xs mt-1" style={{ color: textColor, opacity: 0.8 }}>
+                Contoh tampilan gradasi, teks &amp; motif
+              </p>
             </div>
           </div>
           <div>
