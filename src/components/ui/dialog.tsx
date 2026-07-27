@@ -61,7 +61,7 @@ export function Dialog({
         onClick={onClose}
       />
       <div
-        className={`relative w-full max-w-md rounded-2xl glass p-6 glow-ring ${closing ? "modal-out" : "modal-in"}`}
+        className={`relative w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl glass p-6 glow-ring ${closing ? "modal-out" : "modal-in"}`}
       >
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-display font-bold text-lg">{title}</h3>

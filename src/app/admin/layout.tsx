@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { AdminSidebar } from "@/components/admin/sidebar";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -8,6 +9,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!session?.user || session.user.role !== "ADMIN") {
     redirect("/");
   }
+
+  const [orderCount, topupOrderCount] = await Promise.all([
+    prisma.order.count({ where: { status: "PENDING" } }),
+    prisma.topupOrder.count({ where: { status: "PENDING" } }),
+  ]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -19,7 +25,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </span>
         </div>
         <div className="grid lg:grid-cols-[220px_1fr] gap-8">
-          <AdminSidebar />
+          <AdminSidebar initialOrderCount={orderCount} initialTopupOrderCount={topupOrderCount} />
           <div className="min-w-0">{children}</div>
         </div>
       </div>

@@ -18,9 +18,15 @@ interface Game {
   slug: string;
   description: string | null;
   icon: string | null;
+  bannerUrl: string | null;
+  bgColor: string | null;
+  textColor: string | null;
   status: string;
   _count: { items: number };
 }
+
+const DEFAULT_BG_COLOR = "#ffffff";
+const DEFAULT_TEXT_COLOR = "#12141b";
 
 export default function AdminTopupGamesPage() {
   const [games, setGames] = useState<Game[]>([]);
@@ -32,10 +38,14 @@ export default function AdminTopupGamesPage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [icon, setIcon] = useState("");
+  const [bannerUrl, setBannerUrl] = useState("");
+  const [bgColor, setBgColor] = useState(DEFAULT_BG_COLOR);
+  const [textColor, setTextColor] = useState(DEFAULT_TEXT_COLOR);
   const [status, setStatus] = useState<"PUBLISHED" | "DRAFT">("DRAFT");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -54,6 +64,9 @@ export default function AdminTopupGamesPage() {
     setName("");
     setDescription("");
     setIcon("");
+    setBannerUrl("");
+    setBgColor(DEFAULT_BG_COLOR);
+    setTextColor(DEFAULT_TEXT_COLOR);
     setStatus("DRAFT");
     setError("");
     setModalOpen(true);
@@ -64,6 +77,9 @@ export default function AdminTopupGamesPage() {
     setName(g.name);
     setDescription(g.description ?? "");
     setIcon(g.icon ?? "");
+    setBannerUrl(g.bannerUrl ?? "");
+    setBgColor(g.bgColor || DEFAULT_BG_COLOR);
+    setTextColor(g.textColor || DEFAULT_TEXT_COLOR);
     setStatus(g.status as "PUBLISHED" | "DRAFT");
     setError("");
     setModalOpen(true);
@@ -88,6 +104,25 @@ export default function AdminTopupGamesPage() {
     }
   }
 
+  async function handleBannerUpload(fileList: FileList | null) {
+    const file = fileList?.[0];
+    if (!file) return;
+    setUploadingBanner(true);
+    try {
+      const formData = new FormData();
+      formData.append("kind", "image");
+      formData.append("file", file);
+      const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Gagal mengunggah gambar");
+      setBannerUrl(data.url);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal mengunggah gambar");
+    } finally {
+      setUploadingBanner(false);
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -96,7 +131,7 @@ export default function AdminTopupGamesPage() {
       const res = await fetch(editing ? `/api/admin/topup/games/${editing.id}` : "/api/admin/topup/games", {
         method: editing ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, description, icon, status }),
+        body: JSON.stringify({ name, description, icon, bannerUrl, bgColor, textColor, status }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Gagal menyimpan game");
@@ -191,7 +226,8 @@ export default function AdminTopupGamesPage() {
             <Textarea id="gameDesc" rows={2} value={description} onChange={(e) => setDescription(e.target.value)} />
           </div>
           <div>
-            <Label>Logo / Banner</Label>
+            <Label>Logo</Label>
+            <p className="text-xs text-muted-2 mb-2">Icon persegi kecil, dipakai di kartu game dan header halaman.</p>
             {icon && (
               <div className="relative h-24 w-24 rounded-xl overflow-hidden border border-border mb-2">
                 <Image src={icon} alt="" fill sizes="96px" className="object-cover" />
@@ -202,6 +238,68 @@ export default function AdminTopupGamesPage() {
               {icon ? "Ganti gambar" : "Unggah gambar"}
               <input type="file" accept="image/*" className="hidden" onChange={(e) => handleIconUpload(e.target.files)} />
             </label>
+          </div>
+          <div className="pt-3 border-t border-border">
+            <Label>Banner Halaman</Label>
+            <p className="text-xs text-muted-2 mb-2">
+              Gambar lebar yang tampil di paling atas halaman <span className="font-mono">/topup/{"{slug}"}</span> game ini.
+            </p>
+            {bannerUrl && (
+              <div className="relative h-28 w-full rounded-xl overflow-hidden border border-border mb-2">
+                <Image src={bannerUrl} alt="" fill sizes="400px" className="object-cover" />
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              <label className="flex items-center justify-center gap-2 h-11 rounded-xl border-2 border-dashed border-border cursor-pointer hover:border-border-strong text-sm text-muted-2 w-fit px-4">
+                {uploadingBanner ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                {bannerUrl ? "Ganti banner" : "Unggah banner"}
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => handleBannerUpload(e.target.files)} />
+              </label>
+              {bannerUrl && (
+                <Button type="button" variant="ghost" size="sm" onClick={() => setBannerUrl("")}>
+                  Hapus
+                </Button>
+              )}
+            </div>
+          </div>
+          <div className="pt-3 border-t border-border">
+            <Label>Tema Halaman</Label>
+            <p className="text-xs text-muted-2 mb-2">Warna latar dan teks khusus untuk halaman game ini.</p>
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <Label htmlFor="gameBgColor" className="text-xs">Warna Background</Label>
+                <div className="flex items-center gap-2">
+                  <input
+                    id="gameBgColor"
+                    type="color"
+                    value={bgColor}
+                    onChange={(e) => setBgColor(e.target.value)}
+                    className="h-10 w-11 rounded-lg border border-border cursor-pointer bg-transparent p-0.5"
+                  />
+                  <Input value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="font-mono text-xs" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <Label htmlFor="gameTextColor" className="text-xs">Warna Teks</Label>
+                <div className="flex items-center gap-2">
+                  <input
+                    id="gameTextColor"
+                    type="color"
+                    value={textColor}
+                    onChange={(e) => setTextColor(e.target.value)}
+                    className="h-10 w-11 rounded-lg border border-border cursor-pointer bg-transparent p-0.5"
+                  />
+                  <Input value={textColor} onChange={(e) => setTextColor(e.target.value)} className="font-mono text-xs" />
+                </div>
+              </div>
+            </div>
+            <div
+              className="mt-3 rounded-xl border border-border p-4 text-center transition-colors"
+              style={{ backgroundColor: bgColor, color: textColor }}
+            >
+              <p className="text-sm font-semibold">Pratinjau Halaman {name || "Game"}</p>
+              <p className="text-xs mt-1 opacity-80">Contoh tampilan warna background & teks</p>
+            </div>
           </div>
           <div>
             <Label htmlFor="gameStatus">Status</Label>

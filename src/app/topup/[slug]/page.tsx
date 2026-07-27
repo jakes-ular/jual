@@ -40,7 +40,12 @@ export default async function TopupGamePage({ params }: Props) {
   return (
     <>
       <Navbar />
-      <main className="flex-1">
+      <main className="flex-1" style={game.bgColor ? { backgroundColor: game.bgColor } : undefined}>
+        {game.bannerUrl && (
+          <div className="relative w-full h-40 sm:h-56 lg:h-72">
+            <Image src={game.bannerUrl} alt={`Banner ${game.name}`} fill sizes="100vw" className="object-cover" priority />
+          </div>
+        )}
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
           <div className="flex flex-col items-center text-center mb-10">
             <div className="relative h-24 w-24 rounded-2xl overflow-hidden bg-surface-2 mb-4">
@@ -52,8 +57,20 @@ export default async function TopupGamePage({ params }: Props) {
                 </div>
               )}
             </div>
-            <h1 className="font-display font-bold text-3xl">Topup {game.name}</h1>
-            {game.description && <p className="text-sm text-muted mt-2 max-w-xl">{game.description}</p>}
+            <h1
+              className="font-display font-bold text-3xl"
+              style={game.textColor ? { color: game.textColor } : undefined}
+            >
+              Topup {game.name}
+            </h1>
+            {game.description && (
+              <p
+                className={game.textColor ? "text-sm mt-2 max-w-xl opacity-80" : "text-sm text-muted mt-2 max-w-xl"}
+                style={game.textColor ? { color: game.textColor } : undefined}
+              >
+                {game.description}
+              </p>
+            )}
           </div>
 
           {game.items.length === 0 ? (

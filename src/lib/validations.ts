@@ -56,6 +56,9 @@ export const topupGameSchema = z.object({
   name: z.string().min(2, "Nama game minimal 2 karakter").max(80),
   description: z.string().max(300).optional(),
   icon: z.string().max(500).optional(),
+  bannerUrl: z.string().max(500).optional(),
+  bgColor: z.string().max(9).optional(),
+  textColor: z.string().max(9).optional(),
   status: z.enum(["PUBLISHED", "DRAFT"]).default("DRAFT"),
 });
 

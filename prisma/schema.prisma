@@ -295,7 +295,10 @@ model TopupGame {
   id          String   @id @default(cuid())
   name        String
   slug        String   @unique
-  icon        String?  // banner/logo image url shown on the game card
+  icon        String?  // small logo image url shown on the game card
+  bannerUrl   String?  // wide banner shown on this game's own /topup/[slug] page
+  bgColor     String?  // hex background color for that page's header section
+  textColor   String?  // hex heading/text color for that page's header section
   description String?
   status      String   @default("DRAFT") // PUBLISHED | DRAFT
   createdAt   DateTime @default(now())
