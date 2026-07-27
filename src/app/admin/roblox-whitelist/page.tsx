@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, Copy, RefreshCw, Eye, EyeOff, ShieldCheck, ListChecks, ChevronDown, ChevronUp, Radio } from "lucide-react";
+import { Plus, Trash2, Copy, RefreshCw, Eye, EyeOff, ShieldCheck, ListChecks, Radio } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Label, FieldError } from "@/components/ui/input";
 import { Dialog } from "@/components/ui/dialog";
@@ -46,7 +46,6 @@ export default function AdminRobloxWhitelistPage() {
   const [entries, setEntries] = useState<WhitelistEntry[]>([]);
   const [secret, setSecret] = useState("");
   const [showSecret, setShowSecret] = useState(false);
-  const [showFullScript, setShowFullScript] = useState(true);
   const [loading, setLoading] = useState(true);
   const [regenerating, setRegenerating] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<WhitelistEntry | null>(null);
@@ -322,37 +321,19 @@ end)
             tidak bisa menghubungi endpoint whitelist sama sekali (gagal → dianggap tidak whitelisted).
           </li>
           <li>
-            <span className="text-foreground font-medium">Buka script <span className="font-mono text-xs">ServerScriptService.Main</span></span> —
-            skrip inti sistem Marching, cari dua baris <span className="font-mono text-xs">WHITELIST_URL</span>{" "}
-            dan <span className="font-mono text-xs">WHITELIST_KEY</span> di bagian atas script itu, lalu
-            ganti persis dengan potongan berikut (klik ikon copy buat salin dua baris sekaligus):
-            <div className="mt-2 rounded-lg bg-surface-2 border border-border p-3 flex items-start justify-between gap-2">
-              <pre className="font-mono text-xs whitespace-pre-wrap break-all text-foreground">
-                {`local WHITELIST_URL = "${fullUrl}"\nlocal WHITELIST_KEY = "${loading ? "" : showSecret ? secret : "•".repeat(24)}"`}
-              </pre>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="shrink-0"
-                onClick={() =>
-                  copyToClipboard(
-                    `local WHITELIST_URL = "${fullUrl}"\nlocal WHITELIST_KEY = "${secret}"`,
-                    "Potongan script"
-                  )
-                }
-              >
-                <Copy className="h-3.5 w-3.5" />
-              </Button>
-            </div>
+            <span className="text-foreground font-medium">Tempel script di bawah</span> jadi seisi{" "}
+            <span className="font-mono text-xs">ServerScriptService.Main</span> — satu script ini
+            sudah lengkap: cek whitelist (<span className="font-mono text-xs">game.CreatorId</span>)
+            sekaligus live tracking (lapor lagi dipakai di place mana), URL &amp; key di dalamnya sudah
+            otomatis terisi nilai akun kamu, tidak perlu ubah apa-apa lagi selain menaruh kode sistem
+            yang mau dilindungi di bawah komentar paling akhir.
           </li>
           <li>
             <span className="text-foreground font-medium">Tambahkan akun ke whitelist</span> — klik{" "}
             <span className="font-mono text-xs">Tambah Akun</span> di bawah, isi{" "}
             <span className="text-foreground">username</span> Roblox-nya (bukan User ID, itu otomatis
             diambil). <span className="text-foreground font-medium">Wajib termasuk akun owner tempat/place itu sendiri</span>,
-            karena yang dicek script adalah pemilik place (<span className="font-mono text-xs">game.CreatorId</span>),
-            bukan pemain yang masuk ke server.
+            karena yang dicek script adalah pemilik place, bukan pemain yang masuk ke server.
           </li>
           <li>
             <span className="text-foreground font-medium">Publish ulang ke Roblox</span> — dari Studio,{" "}
@@ -360,17 +341,10 @@ end)
             memakai script yang sudah berisi URL &amp; key di atas.
           </li>
           <li>
-            <span className="text-foreground font-medium">Cek juga berlaku di Studio</span> — pengecekan
-            whitelist ini aktif di Edit/Play/Team Test juga, bukan cuma server live. Kalau akun owner
-            belum ada di whitelist, sistem Marching juga tidak akan jalan saat testing di Studio —
+            <span className="text-foreground font-medium">Berlaku juga di Studio</span>{" "}— pengecekan
+            whitelist &amp; live tracking ini aktif di Edit/Play/Team Test juga, bukan cuma server live.
+            Kalau akun owner belum ada di whitelist, semuanya tidak akan jalan saat testing di Studio —
             itu perilaku normal, pastikan akun owner sudah ditambahkan di langkah 3.
-          </li>
-          <li>
-            <span className="text-foreground font-medium">Live tracking otomatis aktif</span> — script
-            di atas sudah termasuk pelaporan &quot;lagi dipakai di mana&quot; (place ID, nama place, kapan
-            terakhir aktif) tiap kali dia recheck whitelist (~5 menit sekali). Hasilnya muncul di tabel{" "}
-            <span className="font-medium text-foreground">Live Tracking</span> di bawah halaman ini —
-            tidak perlu setup tambahan.
           </li>
         </ol>
         <div className="mt-4 rounded-lg bg-surface-2 border border-border p-3">
@@ -378,8 +352,8 @@ end)
             Mau pakai whitelist + live tracking yang sama untuk aset lain (bukan Marching)?
           </p>
           <p className="text-xs text-muted-2">
-            Whitelist akunnya tetap satu (per akun Roblox, bukan per aset) — cukup pasang gate yang
-            sama persis di script aset lain itu, lalu ganti nilai <span className="font-mono">ASSET_KEY</span>{" "}
+            Whitelist akunnya tetap satu (per akun Roblox, bukan per aset) — cukup tempel script yang
+            sama persis di aset lain itu, lalu ganti nilai <span className="font-mono">ASSET_KEY</span>{" "}
             (baris di dekat <span className="font-mono">sendHeartbeat</span>, defaultnya{" "}
             <span className="font-mono">&quot;marching&quot;</span>) jadi nama unik buat aset itu. Tracking-nya
             otomatis muncul terpisah di tabel Live Tracking, dibedakan per aset, tanpa perubahan apa pun
@@ -387,44 +361,29 @@ end)
           </p>
         </div>
         <p className="text-xs text-muted-2 mt-3">
-          Kalau secret di-regenerate lewat tombol refresh di bawah, ulangi langkah 2 dengan nilai
-          WHITELIST_KEY yang baru dan publish ulang — sampai itu dilakukan, sistem berhenti berfungsi
-          di server live maupun di Studio.
+          Kalau secret di-regenerate lewat tombol refresh di bawah, tempel ulang script (nilainya sudah
+          otomatis ter-update) dan publish ulang — sampai itu dilakukan, whitelist dan live tracking
+          berhenti berfungsi di server live maupun di Studio.
         </p>
 
         <div className="mt-5 pt-4 border-t border-border">
-          <button
-            type="button"
-            onClick={() => setShowFullScript((s) => !s)}
-            className="flex items-center gap-2 text-sm font-medium text-foreground"
-          >
-            {showFullScript ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            Script Security Gate Lengkap (siap tempel jadi seisi ServerScriptService.Main)
-          </button>
-          <p className="text-xs text-muted-2 mt-1.5 mb-3">
-            Ini kode gate keamanannya secara utuh, bukan cuma dua baris konfigurasi — URL &amp; key di
-            dalamnya sudah otomatis terisi nilai akun kamu. Kalau <span className="font-mono">Main</span>{" "}
-            belum ada / mau dibuat dari nol, tinggal salin semua ini jadi isi scriptnya; kode
-            sistem yang mau kamu lindungi ditaruh di bawah komentar paling akhir. Kalau{" "}
-            <span className="font-mono">Main</span> sudah ada dan cuma perlu update dua variabel,
-            cukup pakai potongan kecil di langkah 2 di atas.
+          <p className="text-sm font-medium text-foreground mb-1">
+            Script lengkap (whitelist + live tracking) — tinggal tempel
           </p>
-          {showFullScript && (
-            <div className="rounded-lg bg-surface-2 border border-border p-3 flex items-start justify-between gap-2">
-              <pre className="font-mono text-xs whitespace-pre-wrap break-all text-foreground max-h-96 overflow-y-auto">
-                {buildFullScript(loading ? "" : showSecret ? secret : "•".repeat(24))}
-              </pre>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="shrink-0"
-                onClick={() => copyToClipboard(buildFullScript(secret), "Script keamanan lengkap")}
-              >
-                <Copy className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-          )}
+          <div className="rounded-lg bg-surface-2 border border-border p-3 flex items-start justify-between gap-2">
+            <pre className="font-mono text-xs whitespace-pre-wrap break-all text-foreground max-h-96 overflow-y-auto">
+              {buildFullScript(loading ? "" : showSecret ? secret : "•".repeat(24))}
+            </pre>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="shrink-0"
+              onClick={() => copyToClipboard(buildFullScript(secret), "Script lengkap")}
+            >
+              <Copy className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </div>
       </div>
 
