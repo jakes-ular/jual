@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
@@ -38,8 +38,23 @@ export function NavbarClient({ categories }: { categories: Category[] }) {
   const [catOpen, setCatOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   const cartCount = useCartStore((s) => s.items.reduce((n, i) => n + i.quantity, 0));
+
+  // Click-based (not hover-based) so the account menu actually works on
+  // touch devices -- mouseenter/mouseleave never fire on tap, which made
+  // this dropdown unreachable on phones.
+  useEffect(() => {
+    if (!userOpen) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [userOpen]);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -125,12 +140,12 @@ export function NavbarClient({ categories }: { categories: Category[] }) {
             </Link>
 
             {mounted && status === "authenticated" ? (
-              <div
-                className="relative"
-                onMouseEnter={() => setUserOpen(true)}
-                onMouseLeave={() => setUserOpen(false)}
-              >
-                <button className="h-10 w-10 rounded-full bg-surface-2 border border-border flex items-center justify-center hover:border-border-strong">
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  onClick={() => setUserOpen((v) => !v)}
+                  className="h-10 w-10 rounded-full bg-surface-2 border border-border flex items-center justify-center hover:border-border-strong"
+                  aria-label="Akun"
+                >
                   <UserIcon className="h-4.5 w-4.5" />
                 </button>
                 {userOpen && (
@@ -141,6 +156,7 @@ export function NavbarClient({ categories }: { categories: Category[] }) {
                       </div>
                       <Link
                         href="/dashboard"
+                        onClick={() => setUserOpen(false)}
                         className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-surface-2"
                       >
                         <LayoutDashboard className="h-4 w-4" /> Dashboard
@@ -148,6 +164,7 @@ export function NavbarClient({ categories }: { categories: Category[] }) {
                       {session.user?.role === "ADMIN" && (
                         <Link
                           href="/admin"
+                          onClick={() => setUserOpen(false)}
                           className="flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-surface-2"
                         >
                           <ShieldCheck className="h-4 w-4" /> Admin Panel
@@ -164,20 +181,33 @@ export function NavbarClient({ categories }: { categories: Category[] }) {
                 )}
               </div>
             ) : (
-              <div className="hidden sm:flex items-center gap-2">
+              <>
+                {/* Compact mobile entry point -- the full Login/Register pair
+                    below is sm:hidden, so without this, logged-out visitors
+                    on a phone had no visible way to reach account access at
+                    all outside the hamburger menu. */}
                 <Link
                   href="/login"
-                  className="px-4 h-10 flex items-center rounded-xl text-sm font-medium border border-border hover:border-border-strong transition-colors"
+                  className="sm:hidden h-10 w-10 flex items-center justify-center rounded-full bg-surface-2 border border-border hover:border-border-strong"
+                  aria-label="Login"
                 >
-                  Login
+                  <UserIcon className="h-4.5 w-4.5" />
                 </Link>
-                <Link
-                  href="/register"
-                  className="px-4 h-10 flex items-center rounded-xl text-sm font-medium bg-gradient-brand text-white hover:brightness-110 transition-all"
-                >
-                  Register
-                </Link>
-              </div>
+                <div className="hidden sm:flex items-center gap-2">
+                  <Link
+                    href="/login"
+                    className="px-4 h-10 flex items-center rounded-xl text-sm font-medium border border-border hover:border-border-strong transition-colors"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="px-4 h-10 flex items-center rounded-xl text-sm font-medium bg-gradient-brand text-white hover:brightness-110 transition-all"
+                  >
+                    Register
+                  </Link>
+                </div>
+              </>
             )}
 
             <button
@@ -193,11 +223,29 @@ export function NavbarClient({ categories }: { categories: Category[] }) {
 
       <div
         className={cn(
-          "lg:hidden overflow-hidden transition-[max-height] duration-300 border-t border-border",
-          mobileOpen ? "max-h-[32rem]" : "max-h-0 border-t-0"
+          "lg:hidden overflow-y-auto transition-[max-height] duration-300 border-t border-border",
+          mobileOpen ? "max-h-[85vh]" : "max-h-0 border-t-0"
         )}
       >
         <div className="px-4 py-4 space-y-4">
+          {!(mounted && status === "authenticated") && (
+            <div className="flex gap-2 pb-2 border-b border-border">
+              <Link
+                href="/login"
+                onClick={() => setMobileOpen(false)}
+                className="flex-1 h-10 flex items-center justify-center rounded-xl text-sm font-medium border border-border"
+              >
+                Login
+              </Link>
+              <Link
+                href="/register"
+                onClick={() => setMobileOpen(false)}
+                className="flex-1 h-10 flex items-center justify-center rounded-xl text-sm font-medium bg-gradient-brand text-white"
+              >
+                Register
+              </Link>
+            </div>
+          )}
           <form onSubmit={handleSearch} className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-2" />
             <input
@@ -232,24 +280,6 @@ export function NavbarClient({ categories }: { categories: Category[] }) {
               </Link>
             ))}
           </div>
-          {!(mounted && status === "authenticated") && (
-            <div className="flex gap-2 pt-2 border-t border-border">
-              <Link
-                href="/login"
-                onClick={() => setMobileOpen(false)}
-                className="flex-1 h-10 flex items-center justify-center rounded-xl text-sm font-medium border border-border"
-              >
-                Login
-              </Link>
-              <Link
-                href="/register"
-                onClick={() => setMobileOpen(false)}
-                className="flex-1 h-10 flex items-center justify-center rounded-xl text-sm font-medium bg-gradient-brand text-white"
-              >
-                Register
-              </Link>
-            </div>
-          )}
         </div>
       </div>
     </header>
