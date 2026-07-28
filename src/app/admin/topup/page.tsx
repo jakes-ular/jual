@@ -339,7 +339,7 @@ export default function AdminTopupGamesPage() {
             </p>
             {bannerUrl && (
               <div className="relative h-28 w-full rounded-xl overflow-hidden border border-border mb-2">
-                <Image src={bannerUrl} alt="" fill sizes="400px" className="object-cover" />
+                <Image src={bannerUrl} alt="" fill sizes="400px" className="object-cover object-center" />
               </div>
             )}
             <div className="flex items-center gap-2">

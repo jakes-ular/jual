@@ -188,6 +188,12 @@ export function ImageCropper({
               style={{ width: dispW, height: dispH, transform: `translate(${pos.x}px, ${pos.y}px)` }}
             />
           )}
+          {/* Center guide: what's under this crosshair lands dead-center in the cropped output */}
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+            <div className="absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2 bg-white/40 mix-blend-difference" />
+            <div className="absolute top-1/2 left-0 right-0 h-px -translate-y-1/2 bg-white/40 mix-blend-difference" />
+            <div className="h-3 w-3 rounded-full border border-white/70 mix-blend-difference" />
+          </div>
         </div>
 
         <div className="flex items-center gap-3 mt-4">

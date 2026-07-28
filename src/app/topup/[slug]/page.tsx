@@ -46,7 +46,14 @@ export default async function TopupGamePage({ params }: Props) {
       <main className="flex-1" style={pageBackground}>
         {game.bannerUrl && (
           <div className="relative w-full h-40 sm:h-56 lg:h-72">
-            <Image src={game.bannerUrl} alt={`Banner ${game.name}`} fill sizes="100vw" className="object-cover" priority />
+            <Image
+              src={game.bannerUrl}
+              alt={`Banner ${game.name}`}
+              fill
+              sizes="100vw"
+              className="object-cover object-center"
+              priority
+            />
           </div>
         )}
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
