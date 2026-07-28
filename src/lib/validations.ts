@@ -96,8 +96,11 @@ export const passwordChangeSchema = z.object({
 });
 
 export const robloxWhitelistSchema = z.object({
-  robloxUsername: z.string().min(3, "Username Roblox minimal 3 karakter").max(50),
-  note: z.string().max(200).optional(),
+  robloxUsername: z
+    .string()
+    .min(3, "Username Roblox minimal 3 karakter")
+    .max(50, "Username Roblox maksimal 50 karakter"),
+  note: z.string().max(200, "Catatan maksimal 200 karakter").optional(),
 });
 
 export const robloxHeartbeatSchema = z.object({
