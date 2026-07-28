@@ -9,7 +9,7 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-import { getOrCreateWhitelistSecret, regenerateWhitelistSecret, resolveRobloxUser } from "./roblox";
+import { getOrCreateWhitelistSecret, regenerateWhitelistSecret, resolveRobloxUser, resolveRobloxGroup } from "./roblox";
 import { prisma } from "@/lib/prisma";
 
 describe("getOrCreateWhitelistSecret", () => {
@@ -70,5 +70,31 @@ describe("resolveRobloxUser", () => {
   it("returns null when no user matches", async () => {
     (fetch as any).mockResolvedValue({ ok: true, json: async () => ({ data: [] }) });
     expect(await resolveRobloxUser("nobody")).toBeNull();
+  });
+});
+
+describe("resolveRobloxGroup", () => {
+  beforeEach(() => {
+    vi.stubGlobal("fetch", vi.fn());
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("returns the resolved id/name on a successful lookup", async () => {
+    (fetch as any).mockResolvedValue({
+      ok: true,
+      json: async () => ({ id: 366517288, name: "Some Group" }),
+    });
+
+    expect(await resolveRobloxGroup("366517288")).toEqual({ id: 366517288, name: "Some Group" });
+  });
+
+  it("returns null without calling fetch when the id isn't numeric", async () => {
+    expect(await resolveRobloxGroup("not-a-number")).toBeNull();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("returns null when the Roblox API call fails", async () => {
+    (fetch as any).mockResolvedValue({ ok: false });
+    expect(await resolveRobloxGroup("999")).toBeNull();
   });
 });

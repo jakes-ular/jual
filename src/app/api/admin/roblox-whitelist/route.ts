@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin-guard";
 import { prisma } from "@/lib/prisma";
 import { robloxWhitelistSchema } from "@/lib/validations";
-import { resolveRobloxUser, getOrCreateWhitelistSecret } from "@/lib/roblox";
+import { resolveRobloxUser, resolveRobloxGroup, getOrCreateWhitelistSecret } from "@/lib/roblox";
 
 export async function GET() {
   const auth = await requireAdmin();
@@ -31,20 +31,29 @@ export async function POST(req: Request) {
     );
   }
 
-  const resolved = await resolveRobloxUser(parsed.data.robloxUsername);
+  const { type, identifier } = parsed.data;
+  const resolved =
+    type === "GROUP" ? await resolveRobloxGroup(identifier) : await resolveRobloxUser(identifier);
   if (!resolved) {
-    return NextResponse.json({ error: "Username Roblox tidak ditemukan" }, { status: 404 });
+    return NextResponse.json(
+      { error: type === "GROUP" ? "Group ID tidak ditemukan" : "Username Roblox tidak ditemukan" },
+      { status: 404 }
+    );
   }
 
   const existing = await prisma.robloxWhitelist.findUnique({
-    where: { robloxUserId: String(resolved.id) },
+    where: { robloxUserId_type: { robloxUserId: String(resolved.id), type } },
   });
   if (existing) {
-    return NextResponse.json({ error: "Akun ini sudah ada di whitelist" }, { status: 409 });
+    return NextResponse.json(
+      { error: type === "GROUP" ? "Group ini sudah ada di whitelist" : "Akun ini sudah ada di whitelist" },
+      { status: 409 }
+    );
   }
 
   const entry = await prisma.robloxWhitelist.create({
     data: {
+      type,
       robloxUsername: resolved.name,
       robloxUserId: String(resolved.id),
       note: parsed.data.note || null,

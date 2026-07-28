@@ -33,7 +33,9 @@ export async function POST(req: Request) {
   }
 
   const entry = await prisma.robloxWhitelist.findUnique({
-    where: { robloxUserId: String(parsed.data.creatorId) },
+    where: {
+      robloxUserId_type: { robloxUserId: String(parsed.data.creatorId), type: parsed.data.creatorType },
+    },
   });
   if (!entry) {
     return NextResponse.json({ error: "Not whitelisted" }, { status: 403 });

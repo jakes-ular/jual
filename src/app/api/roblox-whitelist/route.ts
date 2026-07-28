@@ -18,10 +18,10 @@ export async function GET(req: Request) {
   }
 
   const entries = await prisma.robloxWhitelist.findMany({
-    select: { robloxUsername: true, robloxUserId: true },
+    select: { robloxUsername: true, robloxUserId: true, type: true },
   });
 
   return NextResponse.json({
-    users: entries.map((e) => ({ username: e.robloxUsername, userId: Number(e.robloxUserId) })),
+    users: entries.map((e) => ({ username: e.robloxUsername, userId: Number(e.robloxUserId), type: e.type })),
   });
 }

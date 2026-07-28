@@ -97,15 +97,17 @@ export const passwordChangeSchema = z.object({
 });
 
 export const robloxWhitelistSchema = z.object({
-  robloxUsername: z
-    .string()
-    .min(3, "Username Roblox minimal 3 karakter")
-    .max(50, "Username Roblox maksimal 50 karakter"),
+  type: z.enum(["USER", "GROUP"]).default("USER"),
+  // Username for type USER, numeric Group ID for type GROUP -- looked up
+  // against the Roblox API server-side, so length/format beyond a floor is
+  // validated there (a bad value just fails lookup with a clear message).
+  identifier: z.string().min(1, "Wajib diisi").max(50, "Maksimal 50 karakter"),
   note: z.string().max(200, "Catatan maksimal 200 karakter").optional(),
 });
 
 export const robloxHeartbeatSchema = z.object({
   creatorId: z.coerce.number().int().positive(),
+  creatorType: z.enum(["USER", "GROUP"]).default("USER"),
   placeId: z.coerce.string().min(1).max(30),
   placeName: z.string().max(200).optional(),
   assetKey: z.string().min(1).max(50).optional(),

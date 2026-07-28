@@ -18,6 +18,7 @@ interface AssetSession {
 
 interface WhitelistEntry {
   id: string;
+  type: "USER" | "GROUP";
   robloxUsername: string;
   robloxUserId: string;
   note: string | null;
@@ -53,7 +54,8 @@ export default function AdminRobloxWhitelistPage() {
   const [now, setNow] = useState(() => Date.now());
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [username, setUsername] = useState("");
+  const [type, setType] = useState<"USER" | "GROUP">("USER");
+  const [identifier, setIdentifier] = useState("");
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -82,7 +84,8 @@ export default function AdminRobloxWhitelistPage() {
   }, [load]);
 
   function openCreate() {
-    setUsername("");
+    setType("USER");
+    setIdentifier("");
     setNote("");
     setError("");
     setModalOpen(true);
@@ -96,7 +99,7 @@ export default function AdminRobloxWhitelistPage() {
       const res = await fetch("/api/admin/roblox-whitelist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ robloxUsername: username, note }),
+        body: JSON.stringify({ type, identifier, note }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Gagal menambahkan akun");
@@ -159,15 +162,18 @@ export default function AdminRobloxWhitelistPage() {
 
 --[[
 	SECURITY GATE: this script only lets whatever comes after it run if the
-	place's Creator (game.CreatorId) -- by robloxUserId, not just username --
-	is present in the whitelist hosted on the VoxMarket admin dashboard
-	(/admin/roblox-whitelist). An unauthorized copy of this place -- e.g.
-	leaked and republished under someone else's account, or just this
-	script pasted into a different place -- silently gets nothing.
+	place's Creator (game.CreatorId + game.CreatorType) -- by id, not
+	username/group name -- is present in the whitelist hosted on the
+	VoxMarket admin dashboard (/admin/roblox-whitelist). Works for places
+	owned by a personal account OR published under a Group (matched on the
+	group's own id -- a member's rank inside the group is irrelevant). An
+	unauthorized copy of this place -- e.g. leaked and republished under
+	someone else's account/group, or just this script pasted into a
+	different place -- silently gets nothing.
 
 	Enforced everywhere, including Studio (Edit/Play/Team Test) -- there is
-	no bypass. Only the whitelisted owner's own place ever passes the check,
-	in Studio or live.
+	no bypass. Only a whitelisted owner (user or group) ever passes the
+	check, in Studio or live.
 ]]
 
 local HttpService = game:GetService("HttpService")
@@ -187,20 +193,20 @@ local WHITELIST_RECHECK_INTERVAL = 300 -- seconds; re-checked in Studio and live
 local SystemEnabled = false
 
 -- Response shape expected from WHITELIST_URL:
--- {"users": [{"username": "SomeRobloxUser", "userId": 123456}, ...]}
--- Matches directly on robloxUserId (game.CreatorId) -- no
--- Players:GetUserIdFromNameAsync round-trip needed, so this keeps working
--- even if the whitelisted account later changes its Roblox username.
+-- {"users": [{"username": "SomeRobloxUser", "userId": 123456, "type": "USER"}, ...]}
+-- "type" is "USER" for a personal account (matched against game.CreatorId
+-- when the place is owned by a user) or "GROUP" (matched against
+-- game.CreatorId when the place is published under a Group -- membership
+-- rank inside the group does NOT matter, only the group's own id does).
+-- Matches directly on the id, not username/group name, so this keeps
+-- working even if the whitelisted account or group is later renamed.
 local function isCreatorWhitelisted(): boolean
-	if game.CreatorType ~= Enum.CreatorType.User then
-		-- Group-owned places aren't supported by this simple check.
-		return false
-	end
 	if WHITELIST_URL == "" then
 		return false
 	end
 
 	local creatorId = game.CreatorId
+	local creatorType = game.CreatorType
 
 	local fetchOk, response = pcall(function()
 		return HttpService:RequestAsync({
@@ -224,7 +230,10 @@ local function isCreatorWhitelisted(): boolean
 
 	for _, entry in ipairs(data.users) do
 		if typeof(entry) == "table" and tonumber(entry.userId) == creatorId then
-			return true
+			local entryType = if entry.type == "GROUP" then Enum.CreatorType.Group else Enum.CreatorType.User
+			if creatorType == entryType then
+				return true
+			end
 		end
 	end
 	return false
@@ -255,6 +264,7 @@ local function sendHeartbeat()
 			},
 			Body = HttpService:JSONEncode({
 				creatorId = game.CreatorId,
+				creatorType = if game.CreatorType == Enum.CreatorType.Group then "GROUP" else "USER",
 				placeId = tostring(game.PlaceId),
 				placeName = placeName,
 				assetKey = ASSET_KEY,
@@ -329,11 +339,17 @@ end)
             yang mau dilindungi di bawah komentar paling akhir.
           </li>
           <li>
-            <span className="text-foreground font-medium">Tambahkan akun ke whitelist</span> — klik{" "}
-            <span className="font-mono text-xs">Tambah Akun</span> di bawah, isi{" "}
-            <span className="text-foreground">username</span> Roblox-nya (bukan User ID, itu otomatis
-            diambil). <span className="text-foreground font-medium">Wajib termasuk akun owner tempat/place itu sendiri</span>,
-            karena yang dicek script adalah pemilik place, bukan pemain yang masuk ke server.
+            <span className="text-foreground font-medium">Tambahkan akun/group ke whitelist</span> — klik{" "}
+            <span className="font-mono text-xs">Tambah Akun</span> di bawah.{" "}
+            <span className="text-foreground font-medium">Wajib termasuk pemilik place itu sendiri</span>,
+            karena yang dicek script adalah pemilik place (Creator), bukan pemain yang masuk ke server.
+            Cek dulu di <span className="font-mono text-xs">Game Settings &gt; Basic Info</span>: kalau
+            Creator-nya nama akun biasa, pilih tipe <span className="text-foreground">Akun</span> dan isi
+            username-nya (User ID otomatis diambil). Kalau Creator-nya nama Group, wajib pilih tipe{" "}
+            <span className="text-foreground">Group</span> dan isi Group ID-nya (angka di URL halaman
+            group, mis. <span className="font-mono text-xs">roblox.com/groups/123456/...</span>) —
+            whitelist akun pribadi member/admin group itu <span className="italic">tidak</span> ikut
+            meloloskan, karena yang dicocokkan script adalah id Group-nya, bukan rank member di dalamnya.
           </li>
           <li>
             <span className="text-foreground font-medium">Publish ulang ke Roblox</span> — dari Studio,{" "}
@@ -438,8 +454,9 @@ end)
           <table className="w-full text-sm min-w-[480px]">
             <thead>
               <tr className="border-b border-border text-left text-muted-2">
-                <th className="px-4 py-3 font-medium">Username</th>
-                <th className="px-4 py-3 font-medium">Roblox User ID</th>
+                <th className="px-4 py-3 font-medium">Tipe</th>
+                <th className="px-4 py-3 font-medium">Username / Group</th>
+                <th className="px-4 py-3 font-medium">Roblox ID</th>
                 <th className="px-4 py-3 font-medium">Catatan</th>
                 <th className="px-4 py-3 font-medium"></th>
               </tr>
@@ -447,6 +464,11 @@ end)
             <tbody>
               {entries.map((e) => (
                 <tr key={e.id} className="border-b border-border last:border-0">
+                  <td className="px-4 py-3">
+                    <Badge variant={e.type === "GROUP" ? "warning" : "neutral"}>
+                      {e.type === "GROUP" ? "Group" : "Akun"}
+                    </Badge>
+                  </td>
                   <td className="px-4 py-3 font-medium">{e.robloxUsername}</td>
                   <td className="px-4 py-3 font-mono text-xs text-muted">{e.robloxUserId}</td>
                   <td className="px-4 py-3 text-muted">{e.note || "-"}</td>
@@ -516,16 +538,49 @@ end)
       <Dialog open={modalOpen} onClose={() => setModalOpen(false)} title="Tambah Akun ke Whitelist">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="rbxUsername">Username Roblox</Label>
+            <Label>Tipe Pemilik Place</Label>
+            <div className="flex gap-2 mt-1.5">
+              <button
+                type="button"
+                onClick={() => setType("USER")}
+                className={`flex-1 h-10 rounded-xl border text-sm font-medium transition-colors ${
+                  type === "USER"
+                    ? "border-primary bg-primary/10 text-primary-2"
+                    : "border-border text-muted-2 hover:border-border-strong"
+                }`}
+              >
+                Akun
+              </button>
+              <button
+                type="button"
+                onClick={() => setType("GROUP")}
+                className={`flex-1 h-10 rounded-xl border text-sm font-medium transition-colors ${
+                  type === "GROUP"
+                    ? "border-primary bg-primary/10 text-primary-2"
+                    : "border-border text-muted-2 hover:border-border-strong"
+                }`}
+              >
+                Group
+              </button>
+            </div>
+            <p className="text-xs text-muted-2 mt-1.5">
+              Cek di Studio: <span className="font-mono">Game Settings &gt; Basic Info &gt; Creator</span> —
+              kalau isinya nama Group, pilih Group, bukan akun member/admin-nya.
+            </p>
+          </div>
+          <div>
+            <Label htmlFor="rbxIdentifier">{type === "GROUP" ? "Group ID" : "Username Roblox"}</Label>
             <Input
-              id="rbxUsername"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="cth. BuilderMan"
+              id="rbxIdentifier"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              placeholder={type === "GROUP" ? "cth. 123456" : "cth. BuilderMan"}
               required
             />
             <p className="text-xs text-muted-2 mt-1.5">
-              User ID diambil otomatis dari username ini lewat Roblox API saat disimpan.
+              {type === "GROUP"
+                ? "Angka ID Group, ada di URL halaman group (roblox.com/groups/<ID>/...). Nama Group diambil otomatis saat disimpan."
+                : "User ID diambil otomatis dari username ini lewat Roblox API saat disimpan."}
             </p>
           </div>
           <div>

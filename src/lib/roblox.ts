@@ -58,3 +58,19 @@ export async function resolveRobloxUser(username: string): Promise<RobloxUserLoo
   if (!match || typeof match.id !== "number" || typeof match.name !== "string") return null;
   return { id: match.id, name: match.name };
 }
+
+/**
+ * Resolves a Roblox group id to its current name via the public Roblox API.
+ * Needed because game.CreatorId is the *group's* id (not any member's user
+ * id) for places published under a group -- the whitelist gate can't match
+ * on a personal account at all in that case, only on the group itself.
+ */
+export async function resolveRobloxGroup(groupId: string): Promise<RobloxUserLookup | null> {
+  if (!/^\d+$/.test(groupId)) return null;
+  const res = await fetch(`https://groups.roblox.com/v1/groups/${groupId}`);
+  if (!res.ok) return null;
+
+  const data = await res.json().catch(() => null);
+  if (!data || typeof data.id !== "number" || typeof data.name !== "string") return null;
+  return { id: data.id, name: data.name };
+}

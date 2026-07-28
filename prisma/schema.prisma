@@ -240,13 +240,15 @@ model Setting {
 // ServerScriptService.Main's security gate in the Roblox place itself.
 model RobloxWhitelist {
   id             String   @id @default(cuid())
-  robloxUsername String   // snapshot at time of adding, for display only
-  robloxUserId   String   @unique
+  type           String   @default("USER") // USER | GROUP -- matched against game.CreatorType in the gate script
+  robloxUsername String   // snapshot at time of adding (username, or group name for GROUP), for display only
+  robloxUserId   String   // the matching id -- a user id for USER, a group id for GROUP
   note           String?
   createdAt      DateTime @default(now())
 
   sessions       RobloxAssetSession[]
 
+  @@unique([robloxUserId, type])
   @@index([robloxUserId])
 }
 
