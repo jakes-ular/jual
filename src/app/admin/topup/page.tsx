@@ -4,13 +4,29 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Loader2, Upload, Gamepad2 } from "lucide-react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  Loader2,
+  Upload,
+  Gamepad2,
+  ArrowUp,
+  ArrowUpRight,
+  ArrowRight,
+  ArrowDownRight,
+  ArrowDown,
+  ArrowDownLeft,
+  ArrowLeft,
+  ArrowUpLeft,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input, Textarea, Select, Label, FieldError } from "@/components/ui/input";
 import { Dialog } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/ui/states";
 import { TopupTabs } from "@/components/admin/topup-tabs";
+import { ImageCropper } from "@/components/admin/image-cropper";
 import { buildTopupBackgroundStyle } from "@/lib/topup-theme";
 
 interface Game {
@@ -21,6 +37,7 @@ interface Game {
   icon: string | null;
   bannerUrl: string | null;
   bgColors: string[];
+  gradientDirection: number;
   textColor: string | null;
   patternUrl: string | null;
   status: string;
@@ -29,7 +46,19 @@ interface Game {
 
 const DEFAULT_BG_COLORS = ["#ffffff"];
 const DEFAULT_TEXT_COLOR = "#12141b";
+const DEFAULT_GRADIENT_DIRECTION = 135;
 const MAX_BG_COLORS = 6;
+
+const GRADIENT_DIRECTIONS: { deg: number; label: string; icon: typeof ArrowUp }[] = [
+  { deg: 315, label: "Kiri atas", icon: ArrowUpLeft },
+  { deg: 0, label: "Atas", icon: ArrowUp },
+  { deg: 45, label: "Kanan atas", icon: ArrowUpRight },
+  { deg: 270, label: "Kiri", icon: ArrowLeft },
+  { deg: 90, label: "Kanan", icon: ArrowRight },
+  { deg: 225, label: "Kiri bawah", icon: ArrowDownLeft },
+  { deg: 180, label: "Bawah", icon: ArrowDown },
+  { deg: 135, label: "Kanan bawah", icon: ArrowDownRight },
+];
 
 export default function AdminTopupGamesPage() {
   const [games, setGames] = useState<Game[]>([]);
@@ -43,6 +72,7 @@ export default function AdminTopupGamesPage() {
   const [icon, setIcon] = useState("");
   const [bannerUrl, setBannerUrl] = useState("");
   const [bgColors, setBgColors] = useState<string[]>(DEFAULT_BG_COLORS);
+  const [gradientDirection, setGradientDirection] = useState(DEFAULT_GRADIENT_DIRECTION);
   const [textColor, setTextColor] = useState(DEFAULT_TEXT_COLOR);
   const [patternUrl, setPatternUrl] = useState("");
   const [status, setStatus] = useState<"PUBLISHED" | "DRAFT">("DRAFT");
@@ -51,6 +81,8 @@ export default function AdminTopupGamesPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [uploadingPattern, setUploadingPattern] = useState(false);
+  const [cropTarget, setCropTarget] = useState<"logo" | "banner" | null>(null);
+  const [cropFile, setCropFile] = useState<File | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -71,6 +103,7 @@ export default function AdminTopupGamesPage() {
     setIcon("");
     setBannerUrl("");
     setBgColors(DEFAULT_BG_COLORS);
+    setGradientDirection(DEFAULT_GRADIENT_DIRECTION);
     setTextColor(DEFAULT_TEXT_COLOR);
     setPatternUrl("");
     setStatus("DRAFT");
@@ -85,6 +118,7 @@ export default function AdminTopupGamesPage() {
     setIcon(g.icon ?? "");
     setBannerUrl(g.bannerUrl ?? "");
     setBgColors(g.bgColors.length > 0 ? g.bgColors : DEFAULT_BG_COLORS);
+    setGradientDirection(g.gradientDirection ?? DEFAULT_GRADIENT_DIRECTION);
     setTextColor(g.textColor || DEFAULT_TEXT_COLOR);
     setPatternUrl(g.patternUrl ?? "");
     setStatus(g.status as "PUBLISHED" | "DRAFT");
@@ -104,10 +138,23 @@ export default function AdminTopupGamesPage() {
     setBgColors((prev) => (prev.length <= 1 ? prev : prev.filter((_, i) => i !== index)));
   }
 
-  async function handleIconUpload(fileList: FileList | null) {
+  function handleLogoFileSelect(fileList: FileList | null) {
     const file = fileList?.[0];
     if (!file) return;
-    setUploading(true);
+    setCropTarget("logo");
+    setCropFile(file);
+  }
+
+  function handleBannerFileSelect(fileList: FileList | null) {
+    const file = fileList?.[0];
+    if (!file) return;
+    setCropTarget("banner");
+    setCropFile(file);
+  }
+
+  async function uploadCroppedImage(file: File, target: "logo" | "banner") {
+    const setUploadingFlag = target === "logo" ? setUploading : setUploadingBanner;
+    setUploadingFlag(true);
     try {
       const formData = new FormData();
       formData.append("kind", "image");
@@ -115,31 +162,25 @@ export default function AdminTopupGamesPage() {
       const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Gagal mengunggah gambar");
-      setIcon(data.url);
+      if (target === "logo") setIcon(data.url);
+      else setBannerUrl(data.url);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Gagal mengunggah gambar");
     } finally {
-      setUploading(false);
+      setUploadingFlag(false);
     }
   }
 
-  async function handleBannerUpload(fileList: FileList | null) {
-    const file = fileList?.[0];
-    if (!file) return;
-    setUploadingBanner(true);
-    try {
-      const formData = new FormData();
-      formData.append("kind", "image");
-      formData.append("file", file);
-      const res = await fetch("/api/admin/upload", { method: "POST", body: formData });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Gagal mengunggah gambar");
-      setBannerUrl(data.url);
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Gagal mengunggah gambar");
-    } finally {
-      setUploadingBanner(false);
-    }
+  function handleCropped(file: File) {
+    const target = cropTarget;
+    setCropFile(null);
+    setCropTarget(null);
+    if (target) uploadCroppedImage(file, target);
+  }
+
+  function handleCropCancel() {
+    setCropFile(null);
+    setCropTarget(null);
   }
 
   async function handlePatternUpload(fileList: FileList | null) {
@@ -169,7 +210,17 @@ export default function AdminTopupGamesPage() {
       const res = await fetch(editing ? `/api/admin/topup/games/${editing.id}` : "/api/admin/topup/games", {
         method: editing ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, description, icon, bannerUrl, bgColors, textColor, patternUrl, status }),
+        body: JSON.stringify({
+          name,
+          description,
+          icon,
+          bannerUrl,
+          bgColors,
+          gradientDirection,
+          textColor,
+          patternUrl,
+          status,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Gagal menyimpan game");
@@ -265,7 +316,10 @@ export default function AdminTopupGamesPage() {
           </div>
           <div>
             <Label>Logo</Label>
-            <p className="text-xs text-muted-2 mb-2">Icon persegi kecil, dipakai di kartu game dan header halaman.</p>
+            <p className="text-xs text-muted-2 mb-2">
+              Icon persegi kecil, dipakai di kartu game dan header halaman. Ukuran ideal 512×512px (rasio 1:1) —
+              gambar yang diunggah bisa langsung dipotong (crop) ke rasio ini.
+            </p>
             {icon && (
               <div className="relative h-24 w-24 rounded-xl overflow-hidden border border-border mb-2">
                 <Image src={icon} alt="" fill sizes="96px" className="object-cover" />
@@ -274,13 +328,14 @@ export default function AdminTopupGamesPage() {
             <label className="flex items-center justify-center gap-2 h-11 rounded-xl border-2 border-dashed border-border cursor-pointer hover:border-border-strong text-sm text-muted-2 w-fit px-4">
               {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
               {icon ? "Ganti gambar" : "Unggah gambar"}
-              <input type="file" accept="image/*" className="hidden" onChange={(e) => handleIconUpload(e.target.files)} />
+              <input type="file" accept="image/*" className="hidden" onChange={(e) => handleLogoFileSelect(e.target.files)} />
             </label>
           </div>
           <div className="pt-3 border-t border-border">
             <Label>Banner Halaman</Label>
             <p className="text-xs text-muted-2 mb-2">
               Gambar lebar yang tampil di paling atas halaman <span className="font-mono">/topup/{"{slug}"}</span> game ini.
+              Ukuran ideal 1600×400px (rasio 4:1) — gambar yang diunggah bisa langsung dipotong (crop) ke rasio ini.
             </p>
             {bannerUrl && (
               <div className="relative h-28 w-full rounded-xl overflow-hidden border border-border mb-2">
@@ -291,7 +346,7 @@ export default function AdminTopupGamesPage() {
               <label className="flex items-center justify-center gap-2 h-11 rounded-xl border-2 border-dashed border-border cursor-pointer hover:border-border-strong text-sm text-muted-2 w-fit px-4">
                 {uploadingBanner ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
                 {bannerUrl ? "Ganti banner" : "Unggah banner"}
-                <input type="file" accept="image/*" className="hidden" onChange={(e) => handleBannerUpload(e.target.files)} />
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => handleBannerFileSelect(e.target.files)} />
               </label>
               {bannerUrl && (
                 <Button type="button" variant="ghost" size="sm" onClick={() => setBannerUrl("")}>
@@ -329,6 +384,31 @@ export default function AdminTopupGamesPage() {
               <Button type="button" variant="outline" size="sm" onClick={addBgColor}>
                 <Plus className="h-3.5 w-3.5" /> Tambah Warna
               </Button>
+            )}
+
+            {bgColors.length >= 2 && (
+              <div className="mt-4">
+                <Label className="text-xs">Arah Gradasi</Label>
+                <p className="text-xs text-muted-2 mb-2">Pilih ke arah mana warna-warna di atas mengalir.</p>
+                <div className="grid grid-cols-4 gap-2 w-fit">
+                  {GRADIENT_DIRECTIONS.map(({ deg, label, icon: Icon }) => (
+                    <button
+                      key={deg}
+                      type="button"
+                      title={label}
+                      aria-label={label}
+                      onClick={() => setGradientDirection(deg)}
+                      className={`h-10 w-10 rounded-lg border flex items-center justify-center transition-colors ${
+                        gradientDirection === deg
+                          ? "border-primary bg-primary/10 text-primary-2"
+                          : "border-border text-muted-2 hover:border-border-strong"
+                      }`}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
 
             <div className="mt-4">
@@ -372,7 +452,7 @@ export default function AdminTopupGamesPage() {
 
             <div
               className="mt-4 rounded-xl border border-border p-4 text-center transition-colors"
-              style={buildTopupBackgroundStyle(bgColors, patternUrl)}
+              style={buildTopupBackgroundStyle(bgColors, patternUrl, gradientDirection)}
             >
               <p className="text-sm font-semibold" style={{ color: textColor }}>
                 Pratinjau Halaman {name || "Game"}
@@ -410,6 +490,19 @@ export default function AdminTopupGamesPage() {
           </Button>
         </div>
       </Dialog>
+
+      {cropFile && cropTarget && (
+        <ImageCropper
+          file={cropFile}
+          title={cropTarget === "logo" ? "Sesuaikan Logo" : "Sesuaikan Banner"}
+          aspectRatio={cropTarget === "logo" ? 1 : 4}
+          outputWidth={cropTarget === "logo" ? 512 : 1600}
+          outputHeight={cropTarget === "logo" ? 512 : 400}
+          mimeType={cropTarget === "logo" ? "image/png" : "image/jpeg"}
+          onCancel={handleCropCancel}
+          onCropped={handleCropped}
+        />
+      )}
     </div>
   );
 }

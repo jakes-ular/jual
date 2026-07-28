@@ -38,7 +38,7 @@ export default async function TopupGamePage({ params }: Props) {
 
   if (!game || game.status !== "PUBLISHED") notFound();
 
-  const pageBackground = buildTopupBackgroundStyle(game.bgColors, game.patternUrl);
+  const pageBackground = buildTopupBackgroundStyle(game.bgColors, game.patternUrl, game.gradientDirection);
 
   return (
     <>

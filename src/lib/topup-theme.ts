@@ -4,13 +4,14 @@ import type { CSSProperties } from "react";
  * Shared between the admin editor's live preview and the public
  * /topup/[slug] page so both render identically. bgColors is a list of hex
  * stops: 0 leaves the default background alone, 1 is a solid color, 2+
- * becomes a linear-gradient. patternUrl (an uploaded, usually
- * semi-transparent texture) is layered as a repeating image on top of
- * whichever of those it's paired with.
+ * becomes a linear-gradient pointed at gradientDirection degrees.
+ * patternUrl (an uploaded, usually semi-transparent texture) is layered as
+ * a repeating image on top of whichever of those it's paired with.
  */
 export function buildTopupBackgroundStyle(
   bgColors: string[],
-  patternUrl?: string | null
+  patternUrl?: string | null,
+  gradientDirection: number = 135
 ): CSSProperties | undefined {
   const colors = bgColors.filter(Boolean);
   const style: CSSProperties = {};
@@ -23,7 +24,7 @@ export function buildTopupBackgroundStyle(
   }
 
   if (colors.length >= 2) {
-    imageLayers.push(`linear-gradient(135deg, ${colors.join(", ")})`);
+    imageLayers.push(`linear-gradient(${gradientDirection}deg, ${colors.join(", ")})`);
     repeatLayers.push("no-repeat");
   } else if (colors.length === 1) {
     style.backgroundColor = colors[0];

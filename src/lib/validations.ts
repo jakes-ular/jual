@@ -58,6 +58,7 @@ export const topupGameSchema = z.object({
   icon: z.string().max(500).optional(),
   bannerUrl: z.string().max(500).optional(),
   bgColors: z.array(z.string().max(9)).max(6).optional(),
+  gradientDirection: z.coerce.number().int().min(0).max(360).optional(),
   textColor: z.string().max(9).optional(),
   patternUrl: z.string().max(500).optional(),
   status: z.enum(["PUBLISHED", "DRAFT"]).default("DRAFT"),

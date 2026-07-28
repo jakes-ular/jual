@@ -298,6 +298,7 @@ model TopupGame {
   icon        String?  // small logo image url shown on the game card
   bannerUrl   String?  // wide banner shown on this game's own /topup/[slug] page
   bgColors    String[] @default([]) // hex stops for that page's background gradient -- 1 = solid, 2+ = linear-gradient
+  gradientDirection Int @default(135) // degrees (0-360) for the linear-gradient direction when bgColors has 2+ stops
   textColor   String?  // hex heading/text color for that page's header section
   patternUrl  String?  // optional repeating texture/motif layered over the gradient
   description String?
